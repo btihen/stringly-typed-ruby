@@ -106,7 +106,7 @@
 <span class='line line-14 ' >    puts "zip code?"</span>
 <span class='line line-15 ' >    zip_code = gets</span>
 <span class='line line-16 ' ></span>
-<span class='line line-17 ' >    id = $database.insert_int(:addresses,</span>
+<span class='line line-17 ' >    id = $database.insert_into(:addresses,</span>
 <span class='line line-18 ' >        street: street,</span>
 <span class='line line-19 ' >          city: city,</span>
 <span class='line line-20 ' >         state: state,</span>
@@ -117,14 +117,17 @@
 <span class='line line-25 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Mailer</span>
-<span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
-<span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
-<span class='line line-4 ' >                                         :id => address_id)</span>
-<span class='line line-5 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
-<span class='line line-6 ' >  end</span>
-<span class='line line-7 ' >end</span>
-<span class='line line-8 ' ></span></code></pre>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >module ThirdPartyMailingService</span>
+<span class='line line-2 ' >  def self.find_letter(letter_id)</span>
+<span class='line line-3 ' >    # ...</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' ></span>
+<span class='line line-6 ' >  class Letter</span>
+<span class='line line-7 ' >    def mail!(street,city,state,zip_code)</span>
+<span class='line line-8 ' >      # ...</span>
+<span class='line line-9 ' >    end</span>
+<span class='line line-10 ' >  end</span>
+<span class='line line-11 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class LetterSender</span>
@@ -139,17 +142,18 @@
 <span class='line line-10 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >module ThirdPartyMailingService</span>
-<span class='line line-2 ' >  def self.find_letter(letter_id)</span>
-<span class='line line-3 ' >    # ...</span>
-<span class='line line-4 ' >  end</span>
-<span class='line line-5 ' ></span>
-<span class='line line-6 ' >  class Letter</span>
-<span class='line line-7 ' >    def mail!(street,city,state,zip_code)</span>
-<span class='line line-8 ' >      # ...</span>
-<span class='line line-9 ' >    end</span>
-<span class='line line-10 ' >  end</span>
-<span class='line line-11 ' >end</span></code></pre>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Mailer</span>
+<span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
+<span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
+<span class='line line-4 ' >                                         :id => address_id)</span>
+<span class='line line-5 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
+<span class='line line-6 ' >    puts "Letter ##{letter_id} sent to"</span>
+<span class='line line-7 ' >    puts address_hash[:street]</span>
+<span class='line line-8 ' >    puts "#{address_hash[:city], #{address_hash[:state]}, #{address_hash[:zip_code]}"</span>
+<span class='line line-9 ' >  end</span>
+<span class='line line-10 ' >end</span>
+<span class='line line-11 ' ></span>
+<span class='line line-12 ' >Mailer.new.send_letter(ARGV[0].to_i, ARGV[1].to_i)</span></code></pre>
 </section>
 <section class='COMMANDLINE'>
 <pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./store_address.rb</span>
@@ -165,8 +169,8 @@
 </code></pre>
 </section>
 <section class='COMMANDLINE'>
-<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./overdrawn.rb 42</span>
-<span class='cli-element cli-result'><span class='cli-line'>Letter sent to</span>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./send_letter.rb 42 12</span>
+<span class='cli-element cli-result'><span class='cli-line'>Letter #12 sent to</span>
 <span class='cli-line'>45 S. Fair Oaks Ave</span>
 <span class='cli-line'>Beverley Hills, CA 90210</span></span>
 </code></pre>
@@ -185,8 +189,8 @@
 </code></pre>
 </section>
 <section class='COMMANDLINE'>
-<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./overdrawn.rb 43</span>
-<span class='cli-element cli-result'><span class='cli-line'>Letter sent to</span>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./send_letter.rb 43 12</span>
+<span class='cli-element cli-result'><span class='cli-line'>Letter #12 sent to</span>
 <span class='cli-line'>1675 E Altadena Dr</span>
 <span class='cli-line'>Altadena, CA WALSH</span></span>
 </code></pre>
@@ -200,7 +204,9 @@
 <section class='CODE'>
 <pre><code class='ruby,' data-strikeouts='' data-callout-lines='3,4'><span class='line line-1 ' >zip_code = gets</span>
 <span class='line line-2 ' ></span>
-<div class='lines-callout'><span class='line line-3 line-callout' >raise "not a zip code" unless zip_code =~ /^[0-9]{5}$/</span></div></code></pre>
+<div class='lines-callout'><span class='line line-3 line-callout' >unless zip_code =~ /^[0-9]{5}$/</span>
+<span class='line line-4 line-callout' >  raise "not a zip code" </span>
+</div><span class='line line-5 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
 <pre><code class='sql' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >INSERT INTO</span>
@@ -238,10 +244,111 @@
 <h1>This is not how to build a maintainable system</h1>
 </section>
 <section class='IMAGE'>
-<img src='images/app.png'>
+<img src='images/system.png'>
 </section>
 <section class='IMAGE'>
 <img src='images/loose_boundaries.png'>
+</section>
+<section class='SECTION'>
+<h1>Boundaries</h1>
+</section>
+<section class='NORMAL'>
+<h1>What's coming and what's going</h1>
+</section>
+<section class='IMAGE'>
+<img src='images/method.png'>
+</section>
+<section class='IMAGE'>
+<img src='images/strings_and_hashes.png'>
+</section>
+<section class='SECTION'>
+<h1>Data Types</h1>
+</section>
+<section class='BULLETS'>
+<h1>Data Types</h1>
+<ul>
+<li>Possible Values</li>
+<li>What they mean</li>
+<li>Representation</li>
+<li>Allowed Operations</li>
+</ul>
+</section>
+<section class='FREEFORM'>
+<table>
+  <thead>
+  <th></th>
+  <th><code>String</code></th>
+  <th>Zip Code</th>
+  </thead>
+  <tbody>
+  <tr>
+    <th>Possible values</th>
+    <td>Anything</td>
+    <td>Five Digits</td>
+  </tr>
+  <tr>
+    <th>What They Mean</th>
+    <td>Anything</td>
+    <td>Location in the U.S.</td>
+  </tr>
+  <tr>
+    <th>Representation</th>
+    <td>Self</td>
+    <td>String (or Array or numbers or ...)</td>
+  </tr>
+  <tr>
+    <th>Operations</th>
+    <td>A ton</td>
+    <td>Pretty much none</td>
+  </tr>
+  </tbody>
+</table>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  def initialize(string)</span>
+<span class='line line-3 ' >    @raw_zipcode = string</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  def initialize(string)</span>
+<span class='line line-3 ' >    unless string =~ /^\d\d\d\d\d$/</span>
+<span class='line line-4 ' >      raise 'invalid zipcode' </span>
+<span class='line line-5 ' >    end</span>
+<span class='line line-6 ' >    @raw_zipcode = string</span>
+<span class='line line-7 ' >  end</span>
+<span class='line line-8 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >zip1 = ZipCode.new("90210")</span>
+<span class='line line-2 ' ></span>
+<span class='line line-3 ' >zip2 = ZipCode.new("WALSH")</span>
+<span class='line line-4 ' ># => boom</span>
+<span class='line line-5 ' ># zip2 never gets assigned</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  def raw</span>
+<span class='line line-3 ' >    @raw_zipcode</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  def to_s</span>
+<span class='line line-3 ' >    where = {</span>
+<span class='line line-4 ' >      "00" => "Puerto Rico",</span>
+<span class='line line-5 ' >      "03" => "Maine",</span>
+<span class='line line-6 ' >      ...</span>
+<span class='line line-7 ' >      "73" => "Oklahoma",</span>
+<span class='line line-8 ' >      "97" => "Oregon",</span>
+<span class='line line-9 ' >      "99" => "Alaska"</span>
+<span class='line line-10 ' >    }[@raw_zipcode[0..1]]</span>
+<span class='line line-11 ' >    "#{raw} (Somewhere in #{where})"</span>
+<span class='line line-12 ' >  end</span>
+<span class='line line-13 ' >end</span></code></pre>
 </section>
 
     </div>

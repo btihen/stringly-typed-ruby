@@ -13,12 +13,19 @@ warm-grey 847C78
 dark-grey 453635
 
  */
-section.TITLE, section.SECTION, section.IMAGE, section.NORMAL, section.QUOTE {
+section.TITLE, section.SECTION, section.IMAGE, section.NORMAL, section.QUOTE, section.FREEFORM {
   text-align: center;
 }
-
+body {
+  background-image: url(/images/background_translucent.png);
+  filter:alpha(opacity=50);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-origin: content-box;
+  background-attachment: fixed;
+}
 body.TITLE {
-  background: #68BCB0;
+  background-color: #68BCB0;
   color: #FEFAF7;
 }
 
@@ -27,30 +34,32 @@ h1 {
 }
 
 body.IMAGE {
-  background: #FEFAF7;
+  background-color: #FEFAF7;
+  background-image: none;
 }
 body.QUOTE {
-  background: #453635;
+  background-color: #453635;
   color: #FEFAF7;
   text-transform: uppercase;
   font-size: 20%;
 }
 body.SECTION {
-  background: #86C6BD;
+  background-color: #68BCB0;
   color: #FEFAF7;
 }
 
 body.NORMAL, body.BULLETS {
-  background: #FEFAF7;
+  background-color: #FEFAF7;
   color: #453635;
 }
 
 body.COMMANDLINE {
-  background: #453635;
+  background-color: #453635;
 }
 
 body.CODE {
-  background: #FEFAF7;
+  background-image: none;
+  background-color: #FEFAF7;
 }
 
 section.BULLETS {
@@ -60,7 +69,7 @@ section.BULLETS h1 {
   text-align: center;
 }
 section.COMMANDLINE code {
-  background: #453635;
+  background-color: #453635;
   color: #FEFAF7;
 }
 
@@ -93,9 +102,35 @@ h2 {
 h3 {
   font-size: 80%;
 }
-p, li {
+p, li, td, th {
   font-family: "brandon-grotesque",sans-serif;
   line-height: 1.2;
+}
+th {
+  font-weight: 700;
+  text-transform: uppercase;
+  background-color: #453635;
+  color: #FEFAF7;
+  padding: 0.25em;
+}
+th code {
+  text-transform: none;
+}
+
+tbody th {
+  text-align: left;
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-bottom: solid thin #453635;
+  padding-top: 1em;
+}
+
+td {
+  font-weight: 300;
+  border-left: solid thin #453635;
+  padding: 0.5em;
 }
 
 li {
@@ -137,19 +172,19 @@ li {
 }
 
 #timer.time-ok {
-  background: green;
+  background-color: green;
 }
 
 #timer.time-warn {
-  background: yellow;
+  background-color: yellow;
 }
 
 #timer.time-alert {
-  background: red;
+  background-color: red;
 }
 
 #timer.time-over {
-  background: red;
+  background-color: red;
 }
 #timer #controls {
   /* Uncomment this if you want to hide the timer controls

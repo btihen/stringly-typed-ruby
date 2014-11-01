@@ -208,13 +208,99 @@ images/loose_boundaries.png
 !SECTION
 Boundaries
 
-!SECTION
+!NORMAL
 What's coming and what's going
 
 !IMAGE
 images/method.png
 
-!CODE: language=java
-public Object doit(Object) {
-}
+!IMAGE
+images/strings_and_hashes.png
+
+!SECTION
+Data Types
+
+!BULLETS
+Data Types
+* Possible Values
+* What they mean
+* Representation
+* Allowed Operations
+
+!FREEFORM
+<table>
+  <thead>
+  <th></th>
+  <th><code>String</code></th>
+  <th>Zip Code</th>
+  </thead>
+  <tbody>
+  <tr>
+    <th>Possible values</th>
+    <td>Anything</td>
+    <td>Five Digits</td>
+  </tr>
+  <tr>
+    <th>What They Mean</th>
+    <td>Anything</td>
+    <td>Location in the U.S.</td>
+  </tr>
+  <tr>
+    <th>Representation</th>
+    <td>Self</td>
+    <td>String (or Array or numbers or ...)</td>
+  </tr>
+  <tr>
+    <th>Operations</th>
+    <td>A ton</td>
+    <td>Pretty much none</td>
+  </tr>
+  </tbody>
+</table>
+
+!CODE: language=ruby
+class ZipCode
+  def initialize(string)
+    @raw_zipcode = string
+  end
+end
+
+!CODE: language=ruby
+class ZipCode
+  def initialize(string)
+    unless string =~ /^\d\d\d\d\d$/
+      raise 'invalid zipcode' 
+    end
+    @raw_zipcode = string
+  end
+end
+
+!CODE: language=ruby
+zip1 = ZipCode.new("90210")
+
+zip2 = ZipCode.new("WALSH")
+# => boom
+# zip2 never gets assigned
+
+!CODE: language=ruby
+class ZipCode
+  def raw
+    @raw_zipcode
+  end
+end
+
+!CODE: language=ruby
+class ZipCode
+  def to_s
+    where = {
+      "00" => "Puerto Rico",
+      "03" => "Maine",
+      ...
+      "73" => "Oklahoma",
+      "97" => "Oregon",
+      "99" => "Alaska"
+    }[@raw_zipcode[0..1]]
+    "#{raw} (Somewhere in #{where})"
+  end
+end
 
