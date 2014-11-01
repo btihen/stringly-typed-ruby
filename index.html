@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Overcoming Our Obsession With Stringly-Typed Ruby</title>
+    <meta charset="utf-8">
+    <meta name="description" content="Overcoming Our Obsession With Stringly-Typed Ruby">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="js/lib/jquery-1.8.0.min.js"></script>
+    <script src="js/lib/highlight-7.1.min.js"></script>
+    <script src="js/lib/jquerytypewriter.js"></script>
+    <script src="js/lib/underscore-1.3.3.min.js"></script>
+    <script src="js/lib/jquery.touchSwipe.min.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/sizer.js"></script>
+    <script src="js/bullets.js"></script>
+    <script src="js/trickster.js"></script>
+    <script src="js/timer.js"></script>
+    <script src="js/custom.js"></script>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script>
+      $(window).load(function() {
+        TricksterTimer = TricksterTimer(TricksterDefaultConfig,{});
+        TricksterTimer.setup();
+
+        Trickster = TricksterLoader(TricksterDefaultConfig,{});
+        Trickster.load(TricksterTimer);
+
+      });
+    </script>
+    
+    <script src="//use.typekit.net/ief8bbd.js"></script>
+    <script>try{Typekit.load();}catch(e){}</script>
+    
+  </head>
+  <body><div id="contents">
+    <section class='TITLE'>
+<h1>Overcoming Our Obsession With </h1>
+<h2>Stringly-Typed Ruby</h2>
+</section>
+<section class='TITLE'>
+<h1>@davetron5000</h1>
+<h2>(Dave Copeland)</h2>
+</section>
+<section class='IMAGE'>
+<img src='images/cover.png'>
+</section>
+<section class='IMAGE'>
+<img src='images/dccar2.jpg'>
+</section>
+<section class='SECTION'>
+<h1>Stringly-Typed</h1>
+<h2>From @codinghorror's “New Programmer Jargon”</h2>
+<h3><a href="http://blog.codinghorror.com/new-programming-jargon/">http://blog.codinghorror.com/new-programming-jargon/</a></h3>
+</section>
+<section class='QUOTE'>
+<h1>A riff on “strongly typed”. </h1>
+<h2>Used to describe an implementation that needlessly relies on strings when programmer & refactor-friendly options are available.</h2>
+</section>
+<section class='SECTION'>
+<h1>A tale of two zip codes</h1>
+<h2>U.S. postal codes</h2>
+<h3>aka "Zip Codes"</h3>
+</section>
+<section class='BULLETS'>
+<h1>Zip Codes</h1>
+<ul>
+<li>Five Digits, e.g. 90210</li>
+<li>Map to an area of the U.S.</li>
+</ul>
+</section>
+<section class='IMAGE'>
+<img src='images/zipcode_map.png'>
+</section>
+<section class='BULLETS'>
+<h1>Simple App</h1>
+<ul>
+<li>Store addresses in a DB</li>
+<li>Send letters to an address</li>
+</ul>
+</section>
+<section class='CODE'>
+<pre><code class='sql' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >create table addresses(</span>
+<span class='line line-2 ' >  id       int          not null,</span>
+<span class='line line-3 ' >  street   varchar(256) not null,</span>
+<span class='line line-4 ' >  city     varchar(256) not null,</span>
+<span class='line line-5 ' >  state    char(2)      not null,</span>
+<span class='line line-6 ' >  zip_code char(5)      not null</span>
+<span class='line line-7 ' >)</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class AddressReader</span>
+<span class='line line-2 ' >  def read_new_address</span>
+<span class='line line-3 ' >    puts "Enter your address"</span>
+<span class='line line-4 ' ></span>
+<span class='line line-5 ' >    puts "street?"</span>
+<span class='line line-6 ' >    street   = gets</span>
+<span class='line line-7 ' ></span>
+<span class='line line-8 ' >    puts "city?"</span>
+<span class='line line-9 ' >    city     = gets</span>
+<span class='line line-10 ' ></span>
+<span class='line line-11 ' >    puts "state?"</span>
+<span class='line line-12 ' >    state    = gets</span>
+<span class='line line-13 ' ></span>
+<span class='line line-14 ' >    puts "zip code?"</span>
+<span class='line line-15 ' >    zip_code = gets</span>
+<span class='line line-16 ' ></span>
+<span class='line line-17 ' >    id = $database.insert_int(:addresses,</span>
+<span class='line line-18 ' >        street: street,</span>
+<span class='line line-19 ' >          city: city,</span>
+<span class='line line-20 ' >         state: state,</span>
+<span class='line line-21 ' >      zip_code: zip_code)</span>
+<span class='line line-22 ' >    </span>
+<span class='line line-23 ' >    puts "Created address #{id}"</span>
+<span class='line line-24 ' >  end</span>
+<span class='line line-25 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Mailer</span>
+<span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
+<span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
+<span class='line line-4 ' >                                         :id => address_id)</span>
+<span class='line line-5 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
+<span class='line line-6 ' >  end</span>
+<span class='line line-7 ' >end</span>
+<span class='line line-8 ' ></span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class LetterSender</span>
+<span class='line line-2 ' >  def send_letter(letter_id,address)</span>
+<span class='line line-3 ' ></span>
+<span class='line line-4 ' >    letter = ThirdPartyMailingService.find_letter(letter_id)</span>
+<span class='line line-5 ' >    letter.mail!(address[:street],</span>
+<span class='line line-6 ' >                 address[:city],</span>
+<span class='line line-7 ' >                 address[:state],</span>
+<span class='line line-8 ' >                 address[:zip_code])</span>
+<span class='line line-9 ' >  end</span>
+<span class='line line-10 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >module ThirdPartyMailingService</span>
+<span class='line line-2 ' >  def self.find_letter(letter_id)</span>
+<span class='line line-3 ' >    # ...</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' ></span>
+<span class='line line-6 ' >  class Letter</span>
+<span class='line line-7 ' >    def mail!(street,city,state,zip_code)</span>
+<span class='line line-8 ' >      # ...</span>
+<span class='line line-9 ' >    end</span>
+<span class='line line-10 ' >  end</span>
+<span class='line line-11 ' >end</span></code></pre>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./store_address.rb</span>
+<span class='cli-element cli-result'><span class='cli-line'>street?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 45 S. Fair Oaks Ave</span>
+<span class='cli-element cli-result'><span class='cli-line'>city?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> Beverley Hills</span>
+<span class='cli-element cli-result'><span class='cli-line'>state?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> CA</span>
+<span class='cli-element cli-result'><span class='cli-line'>zip?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 90210</span>
+<span class='cli-element cli-result'><span class='cli-line'>You created address 42</span></span>
+</code></pre>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./overdrawn.rb 42</span>
+<span class='cli-element cli-result'><span class='cli-line'>Letter sent to</span>
+<span class='cli-line'>45 S. Fair Oaks Ave</span>
+<span class='cli-line'>Beverley Hills, CA 90210</span></span>
+</code></pre>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./store_address.rb</span>
+<span class='cli-element cli-result'><span class='cli-line'>street?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 1675 E Altadena Dr</span>
+<span class='cli-element cli-result'><span class='cli-line'>city?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> Altadena</span>
+<span class='cli-element cli-result'><span class='cli-line'>state?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> CA</span>
+<span class='cli-element cli-result'><span class='cli-line'>zip?</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> WALSH</span>
+<span class='cli-element cli-result'><span class='cli-line'>You created address 43</span></span>
+</code></pre>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> ./overdrawn.rb 43</span>
+<span class='cli-element cli-result'><span class='cli-line'>Letter sent to</span>
+<span class='cli-line'>1675 E Altadena Dr</span>
+<span class='cli-line'>Altadena, CA WALSH</span></span>
+</code></pre>
+</section>
+<section class='NORMAL'>
+<h1>Oops</h1>
+</section>
+<section class='NORMAL'>
+<h1>Must be a problem reading input!</h1>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3,4'><span class='line line-1 ' >zip_code = gets</span>
+<span class='line line-2 ' ></span>
+<div class='lines-callout'><span class='line line-3 line-callout' >raise "not a zip code" unless zip_code =~ /^[0-9]{5}$/</span></div></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='sql' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >INSERT INTO</span>
+<span class='line line-2 ' >  addresses(street,city,state,zip)</span>
+<span class='line line-3 ' >VALUES</span>
+<span class='line line-4 ' >  ('1675 E Altadena Dr'</span>
+<span class='line line-5 ' >   'Altadena',</span>
+<span class='line line-6 ' >   'CA',</span>
+<span class='line line-7 ' >   'WALSH')</span></code></pre>
+</section>
+<section class='NORMAL'>
+<h1>Oh! Oh!</h1>
+<h2>A problem in our database design!</h2>
+</section>
+<section class='CODE'>
+<pre><code class='sql,' data-strikeouts='' data-callout-lines='5,6,7'><span class='line line-1 ' >ALTER TABLE</span>
+<span class='line line-2 ' >  addresses</span>
+<span class='line line-3 ' >ADD CONSTRAINT</span>
+<span class='line line-4 ' >  looks_like_a_zipcode</span>
+<div class='lines-callout'><span class='line line-5 line-callout' >CHECK (</span>
+<span class='line line-6 line-callout' >  (zip ~* '^[0-9]{5}$')</span>
+<span class='line line-7 line-callout' >)</span></div></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >LetterSender.new.send_letter(letter_id,</span>
+<span class='line line-2 ' >    street: '1675 E Altadena Dr'</span>
+<span class='line line-3 ' >      city: 'Altadena',</span>
+<span class='line line-4 ' >     state: 'CA',</span>
+<span class='line line-5 ' >  zip_code: 'WALSH')</span></code></pre>
+</section>
+<section class='IMAGE'>
+<img src='images/buzz.png'>
+</section>
+<section class='SECTION'>
+<h1>This is not how to build a maintainable system</h1>
+</section>
+<section class='IMAGE'>
+<img src='images/app.png'>
+</section>
+<section class='IMAGE'>
+<img src='images/loose_boundaries.png'>
+</section>
+
+    </div>
+    <aside id="timer">
+      <div id="clock">
+        <span class="hours">
+          <span id="hour">0</span> :
+        </span>
+        <span class="minutes">
+          <span id="minute">00</span> 
+        </span>
+        <span class="seconds"> : 
+          <span id="second">00</span>
+        </span>
+      </div>
+      <div id="controls">
+        <a id="stop" href="#" onclick="return TricksterTimer.stop();">◼</a>
+        <a id="play" href="#" onclick="return TricksterTimer.play();">▶</a>
+        <a id="pause" href="#" onclick="return TricksterTimer.pause();">▮▮</a>
+      </div>
+    </aside>    
+  </body>
+</html>

@@ -1,0 +1,158 @@
+/*
+ * This is where you can make custom styles for the visual
+ * aspects of your slideshow.
+ *
+ * You shouldn't do too much custom sizing here, as it may
+ * mess up the automatic sizing algorithm.
+
+dark-mint 68BCB0
+mint      86C6BD
+off-white FEFAF7
+red       FF5D60
+warm-grey 847C78
+dark-grey 453635
+
+ */
+section.TITLE, section.SECTION, section.IMAGE, section.NORMAL, section.QUOTE {
+  text-align: center;
+}
+
+body.TITLE {
+  background: #68BCB0;
+  color: #FEFAF7;
+}
+
+h1 {
+  text-transform: uppercase;
+}
+
+body.IMAGE {
+  background: #FEFAF7;
+}
+body.QUOTE {
+  background: #453635;
+  color: #FEFAF7;
+  text-transform: uppercase;
+  font-size: 20%;
+}
+body.SECTION {
+  background: #86C6BD;
+  color: #FEFAF7;
+}
+
+body.NORMAL, body.BULLETS {
+  background: #FEFAF7;
+  color: #453635;
+}
+
+body.COMMANDLINE {
+  background: #453635;
+}
+
+body.CODE {
+  background: #FEFAF7;
+}
+
+section.BULLETS {
+  margin-left: 64px;
+}
+section.BULLETS h1 {
+  text-align: center;
+}
+section.COMMANDLINE code {
+  background: #453635;
+  color: #FEFAF7;
+}
+
+section.COMMANDLINE .cli-prompt {
+  font-weight: bold;
+  color: #FEFAF7;
+}
+
+section.COMMANDLINE .cli-command {
+  color: #FEFAF7;
+}
+
+section.CODE code {
+  /*
+  border-radius: 30px;
+  */
+  border-bottom-right-radius: 0.5em;
+  border-bottom-left-radius: 0.5em;
+  box-shadow: 0 0.3em 0.2em -0.2em #ddd7c4;
+}
+h1, h2, h3, h4 {
+  margin: 0;
+  font-family: "brandon-grotesque",sans-serif;
+  font-weight: 700;
+  line-height: 1.4;
+}
+h2 {
+  font-size: 90%;
+}
+h3 {
+  font-size: 80%;
+}
+p, li {
+  font-family: "brandon-grotesque",sans-serif;
+  line-height: 1.2;
+}
+
+li {
+  list-style: disc;
+  list-style-position: outside;
+  margin-left: 1em;
+  margin-right: 1em;
+  line-height: 2em;
+}
+
+#timer {
+  position: fixed;
+  left: 1em;
+  bottom: 1em;
+  /* uncomment this to remove the timer
+  display: none;
+  */
+}
+
+#timer .seconds {
+  /*
+  display: none; /* remove this to show seconds elapsing */
+  */
+}
+
+#timer .hours {
+  display: none; /* remove this to show the hours field */
+}
+
+#timer a {
+  text-decoration: none;
+}
+#timer #clock, #timer #controls {
+  display: inline;
+}
+
+#timer #pause {
+  letter-spacing: -0.2em;
+}
+
+#timer.time-ok {
+  background: green;
+}
+
+#timer.time-warn {
+  background: yellow;
+}
+
+#timer.time-alert {
+  background: red;
+}
+
+#timer.time-over {
+  background: red;
+}
+#timer #controls {
+  /* Uncomment this if you want to hide the timer controls
+  display: none; 
+  */
+}
