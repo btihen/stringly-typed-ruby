@@ -131,13 +131,13 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class LetterSender</span>
-<span class='line line-2 ' >  def send_letter(letter_id,address)</span>
+<span class='line line-2 ' >  def send_letter(letter_id,address_hash)</span>
 <span class='line line-3 ' ></span>
 <span class='line line-4 ' >    letter = ThirdPartyMailingService.find_letter(letter_id)</span>
-<span class='line line-5 ' >    letter.mail!(address[:street],</span>
-<span class='line line-6 ' >                 address[:city],</span>
-<span class='line line-7 ' >                 address[:state],</span>
-<span class='line line-8 ' >                 address[:zip_code])</span>
+<span class='line line-5 ' >    letter.mail!(address_hash[:street],</span>
+<span class='line line-6 ' >                 address_hash[:city],</span>
+<span class='line line-7 ' >                 address_hash[:state],</span>
+<span class='line line-8 ' >                 address_hash[:zip_code])</span>
 <span class='line line-9 ' >  end</span>
 <span class='line line-10 ' >end</span></code></pre>
 </section>
@@ -277,7 +277,7 @@
 <table>
   <thead>
   <th></th>
-  <th><code>String</code></th>
+  <th>String</th>
   <th>Zip Code</th>
   </thead>
   <tbody>
@@ -337,7 +337,7 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
-<span class='line line-2 ' >  def to_s</span>
+<span class='line line-2 ' >  def description</span>
 <span class='line line-3 ' >    where = {</span>
 <span class='line line-4 ' >      "00" => "Puerto Rico",</span>
 <span class='line line-5 ' >      "03" => "Maine",</span>
@@ -349,6 +349,255 @@
 <span class='line line-11 ' >    "#{raw} (Somewhere in #{where})"</span>
 <span class='line line-12 ' >  end</span>
 <span class='line line-13 ' >end</span></code></pre>
+</section>
+<section class='IMAGE'>
+<img src='images/strong_boundaries.png'>
+</section>
+<section class='BULLETS'>
+<h1>Design Activity</h1>
+<ul>
+<li>What problem am I solving?</li>
+<li>Push code around to solve it</li>
+<li>Shore-up the boundaries</li>
+</ul>
+</section>
+<section class='SECTION'>
+<h1>How do we know what the boundaries are?</h1>
+</section>
+<section class='BULLETS'>
+<h1>Conventions</h1>
+<ul>
+<li>Underscorize the classname, e.g. <code>zip_code</code></li>
+<li>Suffix with underscorized, e.g. <code>sender_zip_code</code></li>
+<li>Document public methods</li>
+</ul>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class FooBar</span>
+<span class='line line-2 ' ></span>
+<span class='line line-3 ' >  # zip_code:: instance of ZipCode to geolocate</span>
+<span class='line line-4 ' >  def geolocate(zip_code)</span>
+<span class='line line-5 ' >  end</span>
+<span class='line line-6 ' ></span>
+<span class='line line-7 ' >  # Returns a ZipCode nearest the given lat and long</span>
+<span class='line line-8 ' >  def nearest_zip_code(lat,long)</span>
+<span class='line line-9 ' >  end</span>
+<span class='line line-10 ' ></span>
+<span class='line line-11 ' >private</span>
+<span class='line line-12 ' ></span>
+<span class='line line-13 ' >  def center_point(zip_code)</span>
+<span class='line line-14 ' >  end</span>
+<span class='line line-15 ' >end</span></code></pre>
+</section>
+<section class='SECTION'>
+<h1>Can we enforce this?</h1>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class FooBar</span>
+<span class='line line-2 ' >  def geolocate(zip_code)</span>
+<div class='lines-callout'><span class='line line-3 line-callout' >    unless zip_code.is_a?(ZipCode)</span>
+</div><span class='line line-4 ' >      raise ArgumentError, "must be a ZipCode"</span>
+<span class='line line-5 ' >    end</span>
+<span class='line line-6 ' >    # ...</span>
+<span class='line line-7 ' >  end</span>
+<span class='line line-8 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class FooBar</span>
+<span class='line line-2 ' >  def geolocate(zip_code)</span>
+<div class='lines-callout'><span class='line line-3 line-callout' >    unless zip_code.instance_of?(ZipCode)</span>
+</div><span class='line line-4 ' >      raise ArgumentError, "must be a ZipCode"</span>
+<span class='line line-5 ' >    end</span>
+<span class='line line-6 ' >    # ...</span>
+<span class='line line-7 ' >  end</span>
+<span class='line line-8 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='4'><span class='line line-1 ' >class FooBarTest</span>
+<span class='line line-2 ' >  def test_that_we_get_the_right_data_type</span>
+<span class='line line-3 ' >    result = foo_bar.nearest_zip_code(lat,long)</span>
+<div class='lines-callout'><span class='line line-4 line-callout' >    assert result.kind_of?(ZipCode), </span>
+</div><span class='line line-5 ' >           "Got a #{result.class} instead :("</span>
+<span class='line line-6 ' >  end</span>
+<span class='line line-7 ' >end</span></code></pre>
+</section>
+<section class='SECTION'>
+<h1><strong>Should</strong> we?</h1>
+</section>
+<section class='IMAGE'>
+<img src='images/types_everywhere.png'>
+</section>
+<section class='IMAGE'>
+<img src='images/scala-logo.png'>
+</section>
+<section class='SECTION'>
+<h1>Rules of Thumb</h1>
+</section>
+<section class='NORMAL'>
+<h1>How often do we expect a bad type?</h1>
+</section>
+<section class='NORMAL'>
+<h1>What happens if a bad type comes in?</h1>
+</section>
+<section class='NORMAL'>
+<h1>Fake-out "lean on the compiler"</h1>
+</section>
+<section class='SECTION'>
+<h1>Practically Speaking</h1>
+</section>
+<section class='BULLETS'>
+<h1>When The World Wants/Has Strings</h1>
+<ul>
+<li>Protocols</li>
+<li>Wrappers</li>
+</ul>
+</section>
+<section class='SECTION'>
+<h1>Protocols</h1>
+<h2><a href="http://www.confidentruby.com">www.confidentruby.com</a></h2>
+<h3>Chapter 4.2</h3>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  # as shown before</span>
+<span class='line line-3 ' >end</span></code></pre>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> zip = ZipCode.new("90210")</span>
+<span class='cli-element cli-result'><span class='cli-line'>ZipCode:0x007fb02d8b0968 @raw_zipcode="90210"</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> puts zip</span>
+<span class='cli-element cli-result'><span class='cli-line'>ZipCode:0x007fb02d8b0968</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> puts "The zip is #{zip}"</span>
+<span class='cli-element cli-result'><span class='cli-line'>The zip is ZipCode:0x007fb02d8b0968</span></span>
+</code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  alias to_s raw</span>
+<span class='line line-3 ' >end</span></code></pre>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> puts "The zip is #{zip}"</span>
+<span class='cli-element cli-result'><span class='cli-line'>The zip is 90210</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> puts "The zip is " + zip</span>
+<span class='cli-element cli-result'><span class='cli-line'>TypeError: no implicit conversion of ZipCode into String</span>
+<span class='cli-line'>	from (irb):12:in `+'</span>
+<span class='cli-line'>	from (irb):12</span>
+<span class='cli-line'>	from /Users/davec/.rvm/rubies/ruby-2.1.0/bin/irb:11:in `<main>'</span></span>
+</code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  alias to_str raw</span>
+<span class='line line-3 ' >end</span></code></pre>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> puts "The zip is " + zip</span>
+<span class='cli-element cli-result'><span class='cli-line'>The zip is 90210</span></span>
+</code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='html' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' ><%= zip_code %></span></code></pre>
+</section>
+<section class='BULLETS'>
+<h1>Non-String Goodies, too</h1>
+<ul>
+<li><code>to_a</code></li>
+<li><code>to_int</code></li>
+<li><code>to_h</code></li>
+</ul>
+</section>
+<section class='SECTION'>
+<h1>Wrappers</h1>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Mailer</span>
+<span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
+<span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
+<span class='line line-4 ' >                                         :id => address_id)</span>
+<span class='line line-5 ' >    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])</span>
+<span class='line line-6 ' ></span>
+<span class='line line-7 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
+<span class='line line-8 ' >  end</span>
+<span class='line line-9 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='5' data-callout-lines='5'><span class='line line-1 ' >class Mailer</span>
+<span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
+<span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
+<span class='line line-4 ' >                                         :id => address_id)</span>
+<div class='lines-callout'><span class='line line-5 line-callout' >    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])</span>
+</div><span class='line line-6 ' ></span>
+<span class='line line-7 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
+<span class='line line-8 ' >  end</span>
+<span class='line line-9 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Database</span>
+<span class='line line-2 ' >  def register(table, column, type)</span>
+<span class='line line-3 ' >    @conversions[table][column] = type</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' ></span>
+<span class='line line-6 ' >  def select_from(table, where)</span>
+<span class='line line-7 ' >    results = raw_select_from(table,where)</span>
+<span class='line line-8 ' >    typed_results = {}</span>
+<span class='line line-9 ' >    results.each do |column,value|</span>
+<span class='line line-10 ' >      if @conversions[table][column]</span>
+<span class='line line-11 ' >        typed_results[column] = @conversions[table][column].new(value)</span>
+<span class='line line-12 ' >      else</span>
+<span class='line line-13 ' >        typed_results[column] = value</span>
+<span class='line line-14 ' >      end</span>
+<span class='line line-15 ' >    end</span>
+<span class='line line-16 ' >    typed_results</span>
+<span class='line line-17 ' >  end</span>
+<span class='line line-18 ' >end</span></code></pre>
+</section>
+<section class='NORMAL'>
+<h1>ActiveRecord</h1>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Address < ActiveRecord::Base</span>
+<span class='line line-2 ' >  serialize :zip_code, ZipCode</span>
+<span class='line line-3 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
+<span class='line line-2 ' >  def self.load(raw_string)</span>
+<span class='line line-3 ' >    self.new(raw_string)</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' ></span>
+<span class='line line-6 ' >  def self.dump(zip_code)</span>
+<span class='line line-7 ' >    zip_code.to_str</span>
+<span class='line line-8 ' >  end</span>
+<span class='line line-9 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >a = Address.find(43) # has the bad zipcode</span>
+<span class='line line-2 ' ><ArgumentError "must be a ZipCode"></span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >zip_code = ZipCode.new(gets)</span>
+<span class='line line-2 ' ></span>
+<span class='line line-3 ' >Address.create!(street: street,</span>
+<span class='line line-4 ' >                  city: city,</span>
+<span class='line line-5 ' >                 state: state,</span>
+<span class='line line-6 ' >              zip_code: zip_code)</span>
+<span class='line line-7 ' ></span></code></pre>
+</section>
+<section class='BULLETS'>
+<h1>Opportunites</h1>
+<ul>
+<li>Email</li>
+<li>State/Province</li>
+<li>Prices</li>
+<li>"Enumerated" types, e.g. statuses</li>
+</ul>
+</section>
+<section class='FREEFORM'>
+<h1>THANKS!</h1>
+<h2><a href="#">Slides</a></h2>
+<h3><a href="http://www.naildrivin5.com/blog">My Blog</a></h3>
+<h4><a href="http://technology.stitchfix.com/jobs">Get A New Job</a></h4>
 </section>
 
     </div>

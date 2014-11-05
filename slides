@@ -91,13 +91,13 @@ end
 
 !CODE: language=ruby
 class LetterSender
-  def send_letter(letter_id,address)
+  def send_letter(letter_id,address_hash)
 
     letter = ThirdPartyMailingService.find_letter(letter_id)
-    letter.mail!(address[:street],
-                 address[:city],
-                 address[:state],
-                 address[:zip_code])
+    letter.mail!(address_hash[:street],
+                 address_hash[:city],
+                 address_hash[:state],
+                 address_hash[:zip_code])
   end
 end
 
@@ -231,7 +231,7 @@ Data Types
 <table>
   <thead>
   <th></th>
-  <th><code>String</code></th>
+  <th>String</th>
   <th>Zip Code</th>
   </thead>
   <tbody>
@@ -291,7 +291,7 @@ end
 
 !CODE: language=ruby
 class ZipCode
-  def to_s
+  def description
     where = {
       "00" => "Puerto Rico",
       "03" => "Maine",
@@ -304,3 +304,238 @@ class ZipCode
   end
 end
 
+!IMAGE
+images/strong_boundaries.png
+
+!BULLETS
+Design Activity
+* What problem am I solving?
+* Push code around to solve it
+* Shore-up the boundaries
+
+!SECTION
+How do we know what the boundaries are?
+
+!BULLETS
+Conventions
+* Underscorize the classname, e.g. <code>zip_code</code>
+* Suffix with underscorized, e.g. <code>sender_zip_code</code>
+* Document public methods
+
+!CODE: language=ruby
+class FooBar
+
+  # zip_code:: instance of ZipCode to geolocate
+  def geolocate(zip_code)
+  end
+
+  # Returns a ZipCode nearest the given lat and long
+  def nearest_zip_code(lat,long)
+  end
+
+private
+
+  def center_point(zip_code)
+  end
+end
+
+!SECTION
+Can we enforce this?
+
+!CODE: language=ruby, callout=3
+class FooBar
+  def geolocate(zip_code)
+    unless zip_code.is_a?(ZipCode)
+      raise ArgumentError, "must be a ZipCode"
+    end
+    # ...
+  end
+end
+
+!CODE: language=ruby, callout=3
+class FooBar
+  def geolocate(zip_code)
+    unless zip_code.instance_of?(ZipCode)
+      raise ArgumentError, "must be a ZipCode"
+    end
+    # ...
+  end
+end
+
+!CODE: language=ruby, callout=4
+class FooBarTest
+  def test_that_we_get_the_right_data_type
+    result = foo_bar.nearest_zip_code(lat,long)
+    assert result.kind_of?(ZipCode), 
+           "Got a #{result.class} instead :("
+  end
+end
+
+!SECTION
+<strong>Should</strong> we?
+
+!IMAGE
+images/types_everywhere.png
+
+!IMAGE
+images/scala-logo.png
+
+!SECTION
+Rules of Thumb
+
+!NORMAL
+How often do we expect a bad type?
+
+!NORMAL
+What happens if a bad type comes in?
+
+!NORMAL
+Fake-out "lean on the compiler"
+
+!SECTION
+Practically Speaking
+
+!BULLETS
+When The World Wants/Has Strings
+* Protocols
+* Wrappers
+
+!SECTION
+Protocols
+<a href="http://www.confidentruby.com">www.confidentruby.com</a>
+Chapter 4.2
+
+!CODE: language=ruby
+class ZipCode
+  # as shown before
+end
+
+!COMMANDLINE
+> zip = ZipCode.new("90210")
+ZipCode:0x007fb02d8b0968 @raw_zipcode="90210"
+> puts zip
+ZipCode:0x007fb02d8b0968
+> puts "The zip is #{zip}"
+The zip is ZipCode:0x007fb02d8b0968
+
+!CODE: language=ruby
+class ZipCode
+  alias to_s raw
+end
+
+!COMMANDLINE
+> puts "The zip is #{zip}"
+The zip is 90210
+> puts "The zip is " + zip
+TypeError: no implicit conversion of ZipCode into String
+	from (irb):12:in `+'
+	from (irb):12
+	from /Users/davec/.rvm/rubies/ruby-2.1.0/bin/irb:11:in `<main>'
+
+!CODE: language=ruby
+class ZipCode
+  alias to_str raw
+end
+
+!COMMANDLINE
+> puts "The zip is " + zip
+The zip is 90210
+
+!CODE: language=html
+<%= zip_code %>
+
+!BULLETS
+Non-String Goodies, too
+* <code>to_a</code>
+* <code>to_int</code>
+* <code>to_h</code>
+
+!SECTION
+Wrappers
+
+!CODE: language=ruby
+class Mailer
+  def send_letter(address_id,letter_id)
+    address_hash = $database.select_from(:addresses,
+                                         :id => address_id)
+    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])
+
+    LetterSender.new.send_letter(letter_id, to: address_hash)
+  end
+end
+
+!CODE: language=ruby, callout=-5
+class Mailer
+  def send_letter(address_id,letter_id)
+    address_hash = $database.select_from(:addresses,
+                                         :id => address_id)
+    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])
+
+    LetterSender.new.send_letter(letter_id, to: address_hash)
+  end
+end
+
+!CODE: language=ruby
+class Database
+  def register(table, column, type)
+    @conversions[table][column] = type
+  end
+
+  def select_from(table, where)
+    results = raw_select_from(table,where)
+    typed_results = {}
+    results.each do |column,value|
+      if @conversions[table][column]
+        typed_results[column] = @conversions[table][column].new(value)
+      else
+        typed_results[column] = value
+      end
+    end
+    typed_results
+  end
+end
+
+!NORMAL
+ActiveRecord
+
+!CODE: language=ruby
+class Address < ActiveRecord::Base
+  serialize :zip_code, ZipCode
+end
+
+!CODE: language=ruby
+class ZipCode
+  def self.load(raw_string)
+    self.new(raw_string)
+  end
+
+  def self.dump(zip_code)
+    zip_code.to_str
+  end
+end
+
+!CODE: language=ruby
+a = Address.find(43) # has the bad zipcode
+<ArgumentError "must be a ZipCode">
+
+!CODE: language=ruby
+zip_code = ZipCode.new(gets)
+
+Address.create!(street: street,
+                  city: city,
+                 state: state,
+              zip_code: zip_code)
+
+
+!BULLETS
+Opportunites
+* Email
+* State/Province
+* Prices
+* "Enumerated" types, e.g. statuses
+
+!FREEFORM
+<h1>THANKS!</h1>
+<h2><a href="#">Slides</a></h2>
+<h3><a href="http://www.naildrivin5.com/blog">My Blog</a></h3>
+<h4><a href="http://technology.stitchfix.com/jobs">Get A New Job</a></h4>

@@ -106,12 +106,20 @@ p, li, td, th {
   font-family: "brandon-grotesque",sans-serif;
   line-height: 1.2;
 }
+
+section.FREEFORM {
+  width: 100%;
+}
+section.FREEFORM table {
+  margin: 0 auto;
+}
 th {
   font-weight: 700;
   text-transform: uppercase;
   background-color: #453635;
   color: #FEFAF7;
   padding: 0.25em;
+  border-right: solid thin #453635;
 }
 th code {
   text-transform: none;
@@ -130,6 +138,7 @@ tbody tr {
 td {
   font-weight: 300;
   border-left: solid thin #453635;
+  border-right: solid thin #453635;
   padding: 0.5em;
 }
 
