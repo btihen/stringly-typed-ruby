@@ -40,6 +40,20 @@ Simple App
 * Store addresses in a DB
 * Send letters to an address
 
+!CODE: language=ruby
+module ThirdPartyMailingService
+  def self.find_letter(letter_id)
+    # ...
+  end
+
+  class Letter
+    def mail!(street,city,state,zip_code)
+      # ...
+    end
+  end
+end
+
+
 !CODE: language=sql
 create table addresses(
   id       int          not null,
@@ -73,19 +87,6 @@ class AddressReader
       zip_code: zip_code)
     
     puts "Created address #{id}"
-  end
-end
-
-!CODE: language=ruby
-module ThirdPartyMailingService
-  def self.find_letter(letter_id)
-    # ...
-  end
-
-  class Letter
-    def mail!(street,city,state,zip_code)
-      # ...
-    end
   end
 end
 
@@ -157,7 +158,7 @@ Oops
 !NORMAL
 Must be a problem reading input!
 
-!CODE: language=ruby, callout=3,4
+!CODE: language=ruby, callout=3,4,5
 zip_code = gets
 
 unless zip_code =~ /^[0-9]{5}$/
@@ -258,6 +259,9 @@ Data Types
   </tbody>
 </table>
 
+!IMAGE
+images/strong_boundaries.png
+
 !CODE: language=ruby
 class ZipCode
   def initialize(string)
@@ -284,10 +288,13 @@ zip2 = ZipCode.new("WALSH")
 
 !CODE: language=ruby
 class ZipCode
-  def raw
+  def raw_zipcode
     @raw_zipcode
   end
 end
+
+!IMAGE
+images/zipcode_map.png
 
 !CODE: language=ruby
 class ZipCode
@@ -300,7 +307,7 @@ class ZipCode
       "97" => "Oregon",
       "99" => "Alaska"
     }[@raw_zipcode[0..1]]
-    "#{raw} (Somewhere in #{where})"
+    "#{@raw_zipcode} (Somewhere in #{where})"
   end
 end
 
@@ -314,7 +321,7 @@ Design Activity
 * Shore-up the boundaries
 
 !SECTION
-How do we know what the boundaries are?
+How do we publicize these boundaries?
 
 !BULLETS
 Conventions
@@ -362,6 +369,16 @@ class FooBar
   end
 end
 
+!CODE: language=ruby, callout=3
+class FooBar
+  def geolocate(zip_code)
+    unless zip_code.respond_to?(:raw_zipcode)
+      raise ArgumentError, "must implement #raw_zipcode"
+    end
+    # ...
+  end
+end
+
 !CODE: language=ruby, callout=4
 class FooBarTest
   def test_that_we_get_the_right_data_type
@@ -393,7 +410,7 @@ What happens if a bad type comes in?
 Fake-out "lean on the compiler"
 
 !SECTION
-Practically Speaking
+The World Wants Strings
 
 !BULLETS
 When The World Wants/Has Strings
@@ -420,7 +437,7 @@ The zip is ZipCode:0x007fb02d8b0968
 
 !CODE: language=ruby
 class ZipCode
-  alias to_s raw
+  alias to_s raw_zipcode
 end
 
 !COMMANDLINE
@@ -434,7 +451,7 @@ TypeError: no implicit conversion of ZipCode into String
 
 !CODE: language=ruby
 class ZipCode
-  alias to_str raw
+  alias to_str raw_zipcode
 end
 
 !COMMANDLINE
@@ -458,20 +475,47 @@ class Mailer
   def send_letter(address_id,letter_id)
     address_hash = $database.select_from(:addresses,
                                          :id => address_id)
-    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])
 
     LetterSender.new.send_letter(letter_id, to: address_hash)
   end
 end
 
-!CODE: language=ruby, callout=-5
-class Mailer
-  def send_letter(address_id,letter_id)
-    address_hash = $database.select_from(:addresses,
-                                         :id => address_id)
-    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])
+!CODE: language=rub, callout=3
+class Database
+  def select_from(table, where)
+    raw_results = raw_select_from(table,where)
+    raw_results.map do |row|
+      row.map_with_index { |column_value,index|
+        column_name = column_names[index]
+        [ column_name, column_value ]
+      }.to_h
+    end
+  end
+end
 
-    LetterSender.new.send_letter(letter_id, to: address_hash)
+!CODE: language=ruby, callout=4,5
+class Database
+  def select_from(table, where)
+    raw_results = raw_select_from(table,where)
+    raw_results.map do |row|
+      row.map_with_index { |column_value,index|
+        column_name = column_names[index]
+        [ column_name, column_value ]
+      }.to_h
+    end
+  end
+end
+
+!CODE: language=ruby, callout=7,8
+class Database
+  def select_from(table, where)
+    raw_results = raw_select_from(table,where)
+    raw_results.map do |row|
+      row.map_with_index { |column_value,index|
+        column_name = column_names[index]
+        [ column_name, column_value ]
+      }.to_h
+    end
   end
 end
 
@@ -480,23 +524,54 @@ class Database
   def register(table, column, type)
     @conversions[table][column] = type
   end
+end
 
+$database.register(:addresses,:zip_code,ZipCode)
+
+!CODE: language=ruby, callout=7
+class Database
   def select_from(table, where)
-    results = raw_select_from(table,where)
-    typed_results = {}
-    results.each do |column,value|
-      if @conversions[table][column]
-        typed_results[column] = @conversions[table][column].new(value)
-      else
-        typed_results[column] = value
-      end
+    raw_results = raw_select_from(table,where)
+    raw_results.map do |row|
+      row.map_with_index { |column_value,index|
+        column_name = column_names[index]
+        conversion_klass = @conversions[table][column_name]
+        if conversion_klass
+          [
+            column_name, 
+            conversion_klass.new(column_value),
+          ]
+        else
+          [ column_name, column_value ]
+        end
+      }.to_h
     end
-    typed_results
+  end
+end
+
+!CODE: language=ruby, callout=11
+class Database
+  def select_from(table, where)
+    raw_results = raw_select_from(table,where)
+    raw_results.map do |row|
+      row.map_with_index { |column_value,index|
+        column_name = column_names[index]
+        conversion_klass = @conversions[table][column_name]
+        if conversion_klass
+          [
+            column_name, 
+            conversion_klass.new(column_value),
+          ]
+        else
+          [ column_name, column_value ]
+        end
+      }.to_h
+    end
   end
 end
 
 !NORMAL
-ActiveRecord
+Active Record
 
 !CODE: language=ruby
 class Address < ActiveRecord::Base
@@ -514,28 +589,50 @@ class ZipCode
   end
 end
 
-!CODE: language=ruby
-a = Address.find(43) # has the bad zipcode
-<ArgumentError "must be a ZipCode">
+!CODE: language=none
+address = Address.find(43) # has the bad zipcode
+&lt;ArgumentError "must be a ZipCode"&gt;
 
 !CODE: language=ruby
-zip_code = ZipCode.new(gets)
+class AddressReader
+  def read_new_address
 
-Address.create!(street: street,
-                  city: city,
-                 state: state,
-              zip_code: zip_code)
+    # ...
+
+    zip_code = ZipCode.new(gets)
+
+    Address.create!(street: street,
+                      city: city,
+                     state: state,
+                  zip_code: zip_code)
+  end
+end
+
+!SECTION
+Other Opportunites
+
+!NORMAL
+Email
+<code>EmailAddress</code>, <code>VerifiedEmailAddress</code>
+
+!NORMAL
+Prices
+
+!COMMANDLINE
+> 100 / 3 
+33.333333333
+> Price.new(100).discount(30) 
+&lt;Price value=33.33&gt;
 
 
-!BULLETS
-Opportunites
-* Email
-* State/Province
-* Prices
-* "Enumerated" types, e.g. statuses
+!NORMAL
+States or Provinces
+
+!NORMAL
+Enumerated Types
 
 !FREEFORM
 <h1>THANKS!</h1>
 <h2><a href="#">Slides</a></h2>
-<h3><a href="http://www.naildrivin5.com/blog">My Blog</a></h3>
-<h4><a href="http://technology.stitchfix.com/jobs">Get A New Job</a></h4>
+<h3><a href="http://www.naildrivin5.com/blog">My Blog - http://www.naildrivin5.com/blog</a></h3>
+<h4><a href="http://technology.stitchfix.com/jobs">Get A New Job at http://technology.stitchfix.com/jobs</a></h4>

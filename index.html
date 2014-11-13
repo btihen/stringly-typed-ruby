@@ -81,6 +81,20 @@
 </ul>
 </section>
 <section class='CODE'>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >module ThirdPartyMailingService</span>
+<span class='line line-2 ' >  def self.find_letter(letter_id)</span>
+<span class='line line-3 ' >    # ...</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' ></span>
+<span class='line line-6 ' >  class Letter</span>
+<span class='line line-7 ' >    def mail!(street,city,state,zip_code)</span>
+<span class='line line-8 ' >      # ...</span>
+<span class='line line-9 ' >    end</span>
+<span class='line line-10 ' >  end</span>
+<span class='line line-11 ' >end</span>
+<span class='line line-12 ' ></span></code></pre>
+</section>
+<section class='CODE'>
 <pre><code class='sql' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >create table addresses(</span>
 <span class='line line-2 ' >  id       int          not null,</span>
 <span class='line line-3 ' >  street   varchar(256) not null,</span>
@@ -115,19 +129,6 @@
 <span class='line line-23 ' >    puts "Created address #{id}"</span>
 <span class='line line-24 ' >  end</span>
 <span class='line line-25 ' >end</span></code></pre>
-</section>
-<section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >module ThirdPartyMailingService</span>
-<span class='line line-2 ' >  def self.find_letter(letter_id)</span>
-<span class='line line-3 ' >    # ...</span>
-<span class='line line-4 ' >  end</span>
-<span class='line line-5 ' ></span>
-<span class='line line-6 ' >  class Letter</span>
-<span class='line line-7 ' >    def mail!(street,city,state,zip_code)</span>
-<span class='line line-8 ' >      # ...</span>
-<span class='line line-9 ' >    end</span>
-<span class='line line-10 ' >  end</span>
-<span class='line line-11 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class LetterSender</span>
@@ -202,11 +203,11 @@
 <h1>Must be a problem reading input!</h1>
 </section>
 <section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3,4'><span class='line line-1 ' >zip_code = gets</span>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3,4,5'><span class='line line-1 ' >zip_code = gets</span>
 <span class='line line-2 ' ></span>
 <div class='lines-callout'><span class='line line-3 line-callout' >unless zip_code =~ /^[0-9]{5}$/</span>
 <span class='line line-4 line-callout' >  raise "not a zip code" </span>
-</div><span class='line line-5 ' >end</span></code></pre>
+<span class='line line-5 line-callout' >end</span></div></code></pre>
 </section>
 <section class='CODE'>
 <pre><code class='sql' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >INSERT INTO</span>
@@ -304,6 +305,9 @@
   </tbody>
 </table>
 </section>
+<section class='IMAGE'>
+<img src='images/strong_boundaries.png'>
+</section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
 <span class='line line-2 ' >  def initialize(string)</span>
@@ -330,10 +334,13 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
-<span class='line line-2 ' >  def raw</span>
+<span class='line line-2 ' >  def raw_zipcode</span>
 <span class='line line-3 ' >    @raw_zipcode</span>
 <span class='line line-4 ' >  end</span>
 <span class='line line-5 ' >end</span></code></pre>
+</section>
+<section class='IMAGE'>
+<img src='images/zipcode_map.png'>
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
@@ -346,7 +353,7 @@
 <span class='line line-8 ' >      "97" => "Oregon",</span>
 <span class='line line-9 ' >      "99" => "Alaska"</span>
 <span class='line line-10 ' >    }[@raw_zipcode[0..1]]</span>
-<span class='line line-11 ' >    "#{raw} (Somewhere in #{where})"</span>
+<span class='line line-11 ' >    "#{@raw_zipcode} (Somewhere in #{where})"</span>
 <span class='line line-12 ' >  end</span>
 <span class='line line-13 ' >end</span></code></pre>
 </section>
@@ -362,7 +369,7 @@
 </ul>
 </section>
 <section class='SECTION'>
-<h1>How do we know what the boundaries are?</h1>
+<h1>How do we publicize these boundaries?</h1>
 </section>
 <section class='BULLETS'>
 <h1>Conventions</h1>
@@ -413,6 +420,16 @@
 <span class='line line-8 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class FooBar</span>
+<span class='line line-2 ' >  def geolocate(zip_code)</span>
+<div class='lines-callout'><span class='line line-3 line-callout' >    unless zip_code.respond_to?(:raw_zipcode)</span>
+</div><span class='line line-4 ' >      raise ArgumentError, "must implement #raw_zipcode"</span>
+<span class='line line-5 ' >    end</span>
+<span class='line line-6 ' >    # ...</span>
+<span class='line line-7 ' >  end</span>
+<span class='line line-8 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
 <pre><code class='ruby,' data-strikeouts='' data-callout-lines='4'><span class='line line-1 ' >class FooBarTest</span>
 <span class='line line-2 ' >  def test_that_we_get_the_right_data_type</span>
 <span class='line line-3 ' >    result = foo_bar.nearest_zip_code(lat,long)</span>
@@ -443,7 +460,7 @@
 <h1>Fake-out "lean on the compiler"</h1>
 </section>
 <section class='SECTION'>
-<h1>Practically Speaking</h1>
+<h1>The World Wants Strings</h1>
 </section>
 <section class='BULLETS'>
 <h1>When The World Wants/Has Strings</h1>
@@ -473,7 +490,7 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
-<span class='line line-2 ' >  alias to_s raw</span>
+<span class='line line-2 ' >  alias to_s raw_zipcode</span>
 <span class='line line-3 ' >end</span></code></pre>
 </section>
 <section class='COMMANDLINE'>
@@ -488,7 +505,7 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
-<span class='line line-2 ' >  alias to_str raw</span>
+<span class='line line-2 ' >  alias to_str raw_zipcode</span>
 <span class='line line-3 ' >end</span></code></pre>
 </section>
 <section class='COMMANDLINE'>
@@ -515,45 +532,103 @@
 <span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
 <span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
 <span class='line line-4 ' >                                         :id => address_id)</span>
-<span class='line line-5 ' >    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])</span>
-<span class='line line-6 ' ></span>
-<span class='line line-7 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
-<span class='line line-8 ' >  end</span>
-<span class='line line-9 ' >end</span></code></pre>
+<span class='line line-5 ' ></span>
+<span class='line line-6 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
+<span class='line line-7 ' >  end</span>
+<span class='line line-8 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='5' data-callout-lines='5'><span class='line line-1 ' >class Mailer</span>
-<span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
-<span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
-<span class='line line-4 ' >                                         :id => address_id)</span>
-<div class='lines-callout'><span class='line line-5 line-callout' >    address_hash[:zip_code] = ZipCode.new(address_hash[:zip_code])</span>
-</div><span class='line line-6 ' ></span>
-<span class='line line-7 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
-<span class='line line-8 ' >  end</span>
-<span class='line line-9 ' >end</span></code></pre>
+<pre><code class='rub,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class Database</span>
+<span class='line line-2 ' >  def select_from(table, where)</span>
+<div class='lines-callout'><span class='line line-3 line-callout' >    raw_results = raw_select_from(table,where)</span>
+</div><span class='line line-4 ' >    raw_results.map do |row|</span>
+<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
+<span class='line line-6 ' >        column_name = column_names[index]</span>
+<span class='line line-7 ' >        [ column_name, column_value ]</span>
+<span class='line line-8 ' >      }.to_h</span>
+<span class='line line-9 ' >    end</span>
+<span class='line line-10 ' >  end</span>
+<span class='line line-11 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='4,5'><span class='line line-1 ' >class Database</span>
+<span class='line line-2 ' >  def select_from(table, where)</span>
+<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
+<div class='lines-callout'><span class='line line-4 line-callout' >    raw_results.map do |row|</span>
+<span class='line line-5 line-callout' >      row.map_with_index { |column_value,index|</span>
+</div><span class='line line-6 ' >        column_name = column_names[index]</span>
+<span class='line line-7 ' >        [ column_name, column_value ]</span>
+<span class='line line-8 ' >      }.to_h</span>
+<span class='line line-9 ' >    end</span>
+<span class='line line-10 ' >  end</span>
+<span class='line line-11 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='7,8'><span class='line line-1 ' >class Database</span>
+<span class='line line-2 ' >  def select_from(table, where)</span>
+<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
+<span class='line line-4 ' >    raw_results.map do |row|</span>
+<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
+<span class='line line-6 ' >        column_name = column_names[index]</span>
+<div class='lines-callout'><span class='line line-7 line-callout' >        [ column_name, column_value ]</span>
+<span class='line line-8 line-callout' >      }.to_h</span>
+</div><span class='line line-9 ' >    end</span>
+<span class='line line-10 ' >  end</span>
+<span class='line line-11 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Database</span>
 <span class='line line-2 ' >  def register(table, column, type)</span>
 <span class='line line-3 ' >    @conversions[table][column] = type</span>
 <span class='line line-4 ' >  end</span>
-<span class='line line-5 ' ></span>
-<span class='line line-6 ' >  def select_from(table, where)</span>
-<span class='line line-7 ' >    results = raw_select_from(table,where)</span>
-<span class='line line-8 ' >    typed_results = {}</span>
-<span class='line line-9 ' >    results.each do |column,value|</span>
-<span class='line line-10 ' >      if @conversions[table][column]</span>
-<span class='line line-11 ' >        typed_results[column] = @conversions[table][column].new(value)</span>
-<span class='line line-12 ' >      else</span>
-<span class='line line-13 ' >        typed_results[column] = value</span>
-<span class='line line-14 ' >      end</span>
-<span class='line line-15 ' >    end</span>
-<span class='line line-16 ' >    typed_results</span>
-<span class='line line-17 ' >  end</span>
-<span class='line line-18 ' >end</span></code></pre>
+<span class='line line-5 ' >end</span>
+<span class='line line-6 ' ></span>
+<span class='line line-7 ' >$database.register(:addresses,:zip_code,ZipCode)</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='7'><span class='line line-1 ' >class Database</span>
+<span class='line line-2 ' >  def select_from(table, where)</span>
+<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
+<span class='line line-4 ' >    raw_results.map do |row|</span>
+<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
+<span class='line line-6 ' >        column_name = column_names[index]</span>
+<div class='lines-callout'><span class='line line-7 line-callout' >        conversion_klass = @conversions[table][column_name]</span>
+</div><span class='line line-8 ' >        if conversion_klass</span>
+<span class='line line-9 ' >          [</span>
+<span class='line line-10 ' >            column_name, </span>
+<span class='line line-11 ' >            conversion_klass.new(column_value),</span>
+<span class='line line-12 ' >          ]</span>
+<span class='line line-13 ' >        else</span>
+<span class='line line-14 ' >          [ column_name, column_value ]</span>
+<span class='line line-15 ' >        end</span>
+<span class='line line-16 ' >      }.to_h</span>
+<span class='line line-17 ' >    end</span>
+<span class='line line-18 ' >  end</span>
+<span class='line line-19 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='11'><span class='line line-1 ' >class Database</span>
+<span class='line line-2 ' >  def select_from(table, where)</span>
+<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
+<span class='line line-4 ' >    raw_results.map do |row|</span>
+<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
+<span class='line line-6 ' >        column_name = column_names[index]</span>
+<span class='line line-7 ' >        conversion_klass = @conversions[table][column_name]</span>
+<span class='line line-8 ' >        if conversion_klass</span>
+<span class='line line-9 ' >          [</span>
+<span class='line line-10 ' >            column_name, </span>
+<div class='lines-callout'><span class='line line-11 line-callout' >            conversion_klass.new(column_value),</span>
+</div><span class='line line-12 ' >          ]</span>
+<span class='line line-13 ' >        else</span>
+<span class='line line-14 ' >          [ column_name, column_value ]</span>
+<span class='line line-15 ' >        end</span>
+<span class='line line-16 ' >      }.to_h</span>
+<span class='line line-17 ' >    end</span>
+<span class='line line-18 ' >  end</span>
+<span class='line line-19 ' >end</span></code></pre>
 </section>
 <section class='NORMAL'>
-<h1>ActiveRecord</h1>
+<h1>Active Record</h1>
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Address < ActiveRecord::Base</span>
@@ -572,32 +647,53 @@
 <span class='line line-9 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >a = Address.find(43) # has the bad zipcode</span>
-<span class='line line-2 ' ><ArgumentError "must be a ZipCode"></span></code></pre>
+<pre><code class='none' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >address = Address.find(43) # has the bad zipcode</span>
+<span class='line line-2 ' >&lt;ArgumentError "must be a ZipCode"&gt;</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >zip_code = ZipCode.new(gets)</span>
-<span class='line line-2 ' ></span>
-<span class='line line-3 ' >Address.create!(street: street,</span>
-<span class='line line-4 ' >                  city: city,</span>
-<span class='line line-5 ' >                 state: state,</span>
-<span class='line line-6 ' >              zip_code: zip_code)</span>
-<span class='line line-7 ' ></span></code></pre>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class AddressReader</span>
+<span class='line line-2 ' >  def read_new_address</span>
+<span class='line line-3 ' ></span>
+<span class='line line-4 ' >    # ...</span>
+<span class='line line-5 ' ></span>
+<span class='line line-6 ' >    zip_code = ZipCode.new(gets)</span>
+<span class='line line-7 ' ></span>
+<span class='line line-8 ' >    Address.create!(street: street,</span>
+<span class='line line-9 ' >                      city: city,</span>
+<span class='line line-10 ' >                     state: state,</span>
+<span class='line line-11 ' >                  zip_code: zip_code)</span>
+<span class='line line-12 ' >  end</span>
+<span class='line line-13 ' >end</span></code></pre>
 </section>
-<section class='BULLETS'>
-<h1>Opportunites</h1>
-<ul>
-<li>Email</li>
-<li>State/Province</li>
-<li>Prices</li>
-<li>"Enumerated" types, e.g. statuses</li>
-</ul>
+<section class='SECTION'>
+<h1>Other Opportunites</h1>
+</section>
+<section class='NORMAL'>
+<h1>Email</h1>
+<h2><code>EmailAddress</code>, <code>VerifiedEmailAddress</code></h2>
+</section>
+<section class='NORMAL'>
+<h1>Prices</h1>
+</section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 100 / 3 </span>
+<span class='cli-element cli-result'><span class='cli-line'>33.333333333</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> Price.new(100).discount(30) </span>
+<span class='cli-element cli-result'><span class='cli-line'>&lt;Price value=33.33&gt;</span>
+<span class='cli-line'></span></span>
+</code></pre>
+</section>
+<section class='NORMAL'>
+<h1>States or Provinces</h1>
+</section>
+<section class='NORMAL'>
+<h1>Enumerated Types</h1>
 </section>
 <section class='FREEFORM'>
 <h1>THANKS!</h1>
 <h2><a href="#">Slides</a></h2>
-<h3><a href="http://www.naildrivin5.com/blog">My Blog</a></h3>
-<h4><a href="http://technology.stitchfix.com/jobs">Get A New Job</a></h4>
+<h3><a href="http://www.naildrivin5.com/blog">My Blog - http://www.naildrivin5.com/blog</a></h3>
+<h4><a href="http://technology.stitchfix.com/jobs">Get A New Job at http://technology.stitchfix.com/jobs</a></h4>
 </section>
 
     </div>
