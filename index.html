@@ -36,8 +36,9 @@
   </head>
   <body><div id="contents">
     <section class='TITLE'>
-<h1>Overcoming Our Obsession With </h1>
-<h2>Stringly-Typed Ruby</h2>
+<h1>Overcoming Our Obsession With Stringly-Typed Ruby</h1>
+<h2>Dave Copeland / @davetron5000</h2>
+<h3>http://www.naildrivin5.com</h3>
 </section>
 <section class='TITLE'>
 <h1>@davetron5000</h1>
@@ -48,6 +49,10 @@
 </section>
 <section class='IMAGE'>
 <img src='images/dccar2.jpg'>
+</section>
+<section class='TITLE'>
+<h1>Overcoming Our Obsession With </h1>
+<h2>Stringly-Typed Ruby</h2>
 </section>
 <section class='SECTION'>
 <h1>Stringly-Typed</h1>
@@ -245,9 +250,6 @@
 <h1>This is not how to build a maintainable system</h1>
 </section>
 <section class='IMAGE'>
-<img src='images/system.png'>
-</section>
-<section class='IMAGE'>
 <img src='images/loose_boundaries.png'>
 </section>
 <section class='SECTION'>
@@ -269,9 +271,8 @@
 <h1>Data Types</h1>
 <ul>
 <li>Possible Values</li>
-<li>What they mean</li>
-<li>Representation</li>
 <li>Allowed Operations</li>
+<li>What they mean</li>
 </ul>
 </section>
 <section class='FREEFORM'>
@@ -291,11 +292,6 @@
     <th>What They Mean</th>
     <td>Anything</td>
     <td>Location in the U.S.</td>
-  </tr>
-  <tr>
-    <th>Representation</th>
-    <td>Self</td>
-    <td>String (or Array or numbers or ...)</td>
   </tr>
   <tr>
     <th>Operations</th>
@@ -476,16 +472,25 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
-<span class='line line-2 ' >  # as shown before</span>
-<span class='line line-3 ' >end</span></code></pre>
+<span class='line line-2 ' >  def initialize(string)</span>
+<span class='line line-3 ' >    unless string =~ /^\d\d\d\d\d$/</span>
+<span class='line line-4 ' >      raise 'invalid zipcode' </span>
+<span class='line line-5 ' >    end</span>
+<span class='line line-6 ' >    @raw_zipcode = string</span>
+<span class='line line-7 ' >  end</span>
+<span class='line line-8 ' ></span>
+<span class='line line-9 ' >  def raw_zipcode</span>
+<span class='line line-10 ' >    @raw_zipcode</span>
+<span class='line line-11 ' >  end</span>
+<span class='line line-12 ' >end</span></code></pre>
 </section>
 <section class='COMMANDLINE'>
 <pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> zip = ZipCode.new("90210")</span>
-<span class='cli-element cli-result'><span class='cli-line'>ZipCode:0x007fb02d8b0968 @raw_zipcode="90210"</span></span>
+<span class='cli-element cli-result'><span class='cli-line'>&lt;ZipCode:0x007fb02d8b0968 @raw_zipcode="90210"&gt;</span></span>
 <span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> puts zip</span>
-<span class='cli-element cli-result'><span class='cli-line'>ZipCode:0x007fb02d8b0968</span></span>
+<span class='cli-element cli-result'><span class='cli-line'>&lt;ZipCode:0x007fb02d8b0968&gt;</span></span>
 <span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> puts "The zip is #{zip}"</span>
-<span class='cli-element cli-result'><span class='cli-line'>The zip is ZipCode:0x007fb02d8b0968</span></span>
+<span class='cli-element cli-result'><span class='cli-line'>The zip is &lt;ZipCode:0x007fb02d8b0968&gt;</span></span>
 </code></pre>
 </section>
 <section class='CODE'>
@@ -500,7 +505,7 @@
 <span class='cli-element cli-result'><span class='cli-line'>TypeError: no implicit conversion of ZipCode into String</span>
 <span class='cli-line'>	from (irb):12:in `+'</span>
 <span class='cli-line'>	from (irb):12</span>
-<span class='cli-line'>	from /Users/davec/.rvm/rubies/ruby-2.1.0/bin/irb:11:in `<main>'</span></span>
+<span class='cli-line'>	from /Users/davec/.rvm/rubies/ruby-2.1.0/bin/irb:11:in `&lt;main&gt;'</span></span>
 </code></pre>
 </section>
 <section class='CODE'>
@@ -514,7 +519,8 @@
 </code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='html' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' ><%= zip_code %></span></code></pre>
+<pre><code class='html' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >&lt;dt&gt;ZipCode&lt;/dt&gt;</span>
+<span class='line line-2 ' >&lt;dd&gt;&lt;%= zip_code %&gt;&lt;/dd&gt;</span></code></pre>
 </section>
 <section class='BULLETS'>
 <h1>Non-String Goodies, too</h1>
@@ -538,94 +544,88 @@
 <span class='line line-8 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='rub,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class Database</span>
-<span class='line line-2 ' >  def select_from(table, where)</span>
-<div class='lines-callout'><span class='line line-3 line-callout' >    raw_results = raw_select_from(table,where)</span>
-</div><span class='line line-4 ' >    raw_results.map do |row|</span>
-<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
-<span class='line line-6 ' >        column_name = column_names[index]</span>
-<span class='line line-7 ' >        [ column_name, column_value ]</span>
-<span class='line line-8 ' >      }.to_h</span>
-<span class='line line-9 ' >    end</span>
-<span class='line line-10 ' >  end</span>
-<span class='line line-11 ' >end</span></code></pre>
-</section>
-<section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='4,5'><span class='line line-1 ' >class Database</span>
-<span class='line line-2 ' >  def select_from(table, where)</span>
-<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
-<div class='lines-callout'><span class='line line-4 line-callout' >    raw_results.map do |row|</span>
-<span class='line line-5 line-callout' >      row.map_with_index { |column_value,index|</span>
-</div><span class='line line-6 ' >        column_name = column_names[index]</span>
-<span class='line line-7 ' >        [ column_name, column_value ]</span>
-<span class='line line-8 ' >      }.to_h</span>
-<span class='line line-9 ' >    end</span>
-<span class='line line-10 ' >  end</span>
-<span class='line line-11 ' >end</span></code></pre>
-</section>
-<section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='7,8'><span class='line line-1 ' >class Database</span>
-<span class='line line-2 ' >  def select_from(table, where)</span>
-<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
-<span class='line line-4 ' >    raw_results.map do |row|</span>
-<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
-<span class='line line-6 ' >        column_name = column_names[index]</span>
-<div class='lines-callout'><span class='line line-7 line-callout' >        [ column_name, column_value ]</span>
-<span class='line line-8 line-callout' >      }.to_h</span>
-</div><span class='line line-9 ' >    end</span>
-<span class='line line-10 ' >  end</span>
-<span class='line line-11 ' >end</span></code></pre>
-</section>
-<section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Database</span>
-<span class='line line-2 ' >  def register(table, column, type)</span>
-<span class='line line-3 ' >    @conversions[table][column] = type</span>
-<span class='line line-4 ' >  end</span>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
+<span class='line line-2 ' >  def convert(table: table, column: column, to: type)</span>
+<div class='lines-callout'><span class='line line-3 line-callout' >    @conversions[table][column] = type</span>
+</div><span class='line line-4 ' >  end</span>
 <span class='line line-5 ' >end</span>
-<span class='line line-6 ' ></span>
-<span class='line line-7 ' >$database.register(:addresses,:zip_code,ZipCode)</span></code></pre>
+<span class='line line-6 ' >$database = WrappingDatabase.new($database)</span>
+<span class='line line-7 ' ></span>
+<span class='line line-8 ' >$database.convert table: :addresses, </span>
+<span class='line line-9 ' >                 column: :zip_code, </span>
+<span class='line line-10 ' >                     to:  ZipCode</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='7'><span class='line line-1 ' >class Database</span>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
 <span class='line line-2 ' >  def select_from(table, where)</span>
-<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
-<span class='line line-4 ' >    raw_results.map do |row|</span>
-<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
-<span class='line line-6 ' >        column_name = column_names[index]</span>
-<div class='lines-callout'><span class='line line-7 line-callout' >        conversion_klass = @conversions[table][column_name]</span>
-</div><span class='line line-8 ' >        if conversion_klass</span>
-<span class='line line-9 ' >          [</span>
-<span class='line line-10 ' >            column_name, </span>
-<span class='line line-11 ' >            conversion_klass.new(column_value),</span>
-<span class='line line-12 ' >          ]</span>
-<span class='line line-13 ' >        else</span>
-<span class='line line-14 ' >          [ column_name, column_value ]</span>
-<span class='line line-15 ' >        end</span>
-<span class='line line-16 ' >      }.to_h</span>
-<span class='line line-17 ' >    end</span>
-<span class='line line-18 ' >  end</span>
-<span class='line line-19 ' >end</span></code></pre>
+<div class='lines-callout'><span class='line line-3 line-callout' >    raw_results = __getobj__.select_from(table,where)</span>
+</div><span class='line line-4 ' >    if @conversions[table]</span>
+<span class='line line-5 ' >      raw_results.map { |row_hash|</span>
+<span class='line line-6 ' >        row_hash.map { |column,value|</span>
+<span class='line line-7 ' >          if @conversions[table][column]</span>
+<span class='line line-8 ' >            # e.g. value = ZipCode.new("90210")</span>
+<span class='line line-9 ' >            value = @conversions[table][column].new(value)</span>
+<span class='line line-10 ' >          end</span>
+<span class='line line-11 ' >          [column,value]</span>
+<span class='line line-12 ' >        }.to_h</span>
+<span class='line line-13 ' >      }</span>
+<span class='line line-14 ' >    end</span>
+<span class='line line-15 ' >  end</span>
+<span class='line line-16 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='11'><span class='line line-1 ' >class Database</span>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='4,5'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
 <span class='line line-2 ' >  def select_from(table, where)</span>
-<span class='line line-3 ' >    raw_results = raw_select_from(table,where)</span>
-<span class='line line-4 ' >    raw_results.map do |row|</span>
-<span class='line line-5 ' >      row.map_with_index { |column_value,index|</span>
-<span class='line line-6 ' >        column_name = column_names[index]</span>
-<span class='line line-7 ' >        conversion_klass = @conversions[table][column_name]</span>
-<span class='line line-8 ' >        if conversion_klass</span>
-<span class='line line-9 ' >          [</span>
-<span class='line line-10 ' >            column_name, </span>
-<div class='lines-callout'><span class='line line-11 line-callout' >            conversion_klass.new(column_value),</span>
-</div><span class='line line-12 ' >          ]</span>
-<span class='line line-13 ' >        else</span>
-<span class='line line-14 ' >          [ column_name, column_value ]</span>
-<span class='line line-15 ' >        end</span>
-<span class='line line-16 ' >      }.to_h</span>
-<span class='line line-17 ' >    end</span>
-<span class='line line-18 ' >  end</span>
-<span class='line line-19 ' >end</span></code></pre>
+<span class='line line-3 ' >    raw_results = __getobj__.select_from(table,where)</span>
+<div class='lines-callout'><span class='line line-4 line-callout' >    if @conversions[table]</span>
+<span class='line line-5 line-callout' >      raw_results.map { |row_hash|</span>
+</div><span class='line line-6 ' >        row_hash.map { |column,value|</span>
+<span class='line line-7 ' >          if @conversions[table][column]</span>
+<span class='line line-8 ' >            # e.g. value = ZipCode.new("90210")</span>
+<span class='line line-9 ' >            value = @conversions[table][column].new(value)</span>
+<span class='line line-10 ' >          end</span>
+<span class='line line-11 ' >          [column,value]</span>
+<span class='line line-12 ' >        }.to_h</span>
+<span class='line line-13 ' >      }</span>
+<span class='line line-14 ' >    end</span>
+<span class='line line-15 ' >  end</span>
+<span class='line line-16 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='6,11,12'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
+<span class='line line-2 ' >  def select_from(table, where)</span>
+<span class='line line-3 ' >    raw_results = __getobj__.select_from(table,where)</span>
+<span class='line line-4 ' >    if @conversions[table]</span>
+<span class='line line-5 ' >      raw_results.map { |row_hash|</span>
+<div class='lines-callout'><span class='line line-6 line-callout' >        row_hash.map { |column,value|</span>
+</div><span class='line line-7 ' >          if @conversions[table][column]</span>
+<span class='line line-8 ' >            # e.g. value = ZipCode.new("90210")</span>
+<span class='line line-9 ' >            value = @conversions[table][column].new(value)</span>
+<span class='line line-10 ' >          end</span>
+<div class='lines-callout'><span class='line line-11 line-callout' >          [column,value]</span>
+<span class='line line-12 line-callout' >        }.to_h</span>
+</div><span class='line line-13 ' >      }</span>
+<span class='line line-14 ' >    end</span>
+<span class='line line-15 ' >  end</span>
+<span class='line line-16 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='8,9'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
+<span class='line line-2 ' >  def select_from(table, where)</span>
+<span class='line line-3 ' >    raw_results = __getobj__.select_from(table,where)</span>
+<span class='line line-4 ' >    if @conversions[table]</span>
+<span class='line line-5 ' >      raw_results.map { |row_hash|</span>
+<span class='line line-6 ' >        row_hash.map { |column,value|</span>
+<span class='line line-7 ' >          if @conversions[table][column]</span>
+<div class='lines-callout'><span class='line line-8 line-callout' >            # e.g. value = ZipCode.new("90210")</span>
+<span class='line line-9 line-callout' >            value = @conversions[table][column].new(value)</span>
+</div><span class='line line-10 ' >          end</span>
+<span class='line line-11 ' >          [column,value]</span>
+<span class='line line-12 ' >        }.to_h</span>
+<span class='line line-13 ' >      }</span>
+<span class='line line-14 ' >    end</span>
+<span class='line line-15 ' >  end</span>
+<span class='line line-16 ' >end</span></code></pre>
 </section>
 <section class='NORMAL'>
 <h1>Active Record</h1>
@@ -677,8 +677,10 @@
 </section>
 <section class='COMMANDLINE'>
 <pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 100 / 3 </span>
-<span class='cli-element cli-result'><span class='cli-line'>33.333333333</span></span>
-<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> Price.new(100).discount(30) </span>
+<span class='cli-element cli-result'><span class='cli-line'>33</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 100.0 / 3 </span>
+<span class='cli-element cli-result'><span class='cli-line'>33.33333333333</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> Price.new(100).discount(33) </span>
 <span class='cli-element cli-result'><span class='cli-line'>&lt;Price value=33.33&gt;</span>
 <span class='cli-line'></span></span>
 </code></pre>
@@ -688,6 +690,11 @@
 </section>
 <section class='NORMAL'>
 <h1>Enumerated Types</h1>
+</section>
+<section class='SECTION'>
+<h1>Use Data Types</h1>
+<h2>Define Your Boundaries</h2>
+<h3>Knowledge and Intent Go in Code</h3>
 </section>
 <section class='FREEFORM'>
 <h1>THANKS!</h1>

@@ -1,7 +1,8 @@
 Overcoming Our Obsession With Stringly-Typed Ruby
 !TITLE
-Overcoming Our Obsession With 
-Stringly-Typed Ruby
+Overcoming Our Obsession With Stringly-Typed Ruby
+Dave Copeland / @davetron5000
+http://www.naildrivin5.com
 
 !TITLE
 @davetron5000
@@ -12,6 +13,10 @@ images/cover.png
 
 !IMAGE
 images/dccar2.jpg
+
+!TITLE
+Overcoming Our Obsession With 
+Stringly-Typed Ruby
 
 !SECTION
 Stringly-Typed
@@ -201,9 +206,6 @@ images/buzz.png
 This is not how to build a maintainable system
 
 !IMAGE
-images/system.png
-
-!IMAGE
 images/loose_boundaries.png
 
 !SECTION
@@ -224,9 +226,8 @@ Data Types
 !BULLETS
 Data Types
 * Possible Values
-* What they mean
-* Representation
 * Allowed Operations
+* What they mean
 
 !FREEFORM
 <table>
@@ -245,11 +246,6 @@ Data Types
     <th>What They Mean</th>
     <td>Anything</td>
     <td>Location in the U.S.</td>
-  </tr>
-  <tr>
-    <th>Representation</th>
-    <td>Self</td>
-    <td>String (or Array or numbers or ...)</td>
   </tr>
   <tr>
     <th>Operations</th>
@@ -424,16 +420,25 @@ Chapter 4.2
 
 !CODE: language=ruby
 class ZipCode
-  # as shown before
+  def initialize(string)
+    unless string =~ /^\d\d\d\d\d$/
+      raise 'invalid zipcode' 
+    end
+    @raw_zipcode = string
+  end
+
+  def raw_zipcode
+    @raw_zipcode
+  end
 end
 
 !COMMANDLINE
 > zip = ZipCode.new("90210")
-ZipCode:0x007fb02d8b0968 @raw_zipcode="90210"
+&lt;ZipCode:0x007fb02d8b0968 @raw_zipcode="90210"&gt;
 > puts zip
-ZipCode:0x007fb02d8b0968
+&lt;ZipCode:0x007fb02d8b0968&gt;
 > puts "The zip is #{zip}"
-The zip is ZipCode:0x007fb02d8b0968
+The zip is &lt;ZipCode:0x007fb02d8b0968&gt;
 
 !CODE: language=ruby
 class ZipCode
@@ -447,7 +452,7 @@ The zip is 90210
 TypeError: no implicit conversion of ZipCode into String
 	from (irb):12:in `+'
 	from (irb):12
-	from /Users/davec/.rvm/rubies/ruby-2.1.0/bin/irb:11:in `<main>'
+	from /Users/davec/.rvm/rubies/ruby-2.1.0/bin/irb:11:in `&lt;main&gt;'
 
 !CODE: language=ruby
 class ZipCode
@@ -459,7 +464,8 @@ end
 The zip is 90210
 
 !CODE: language=html
-<%= zip_code %>
+&lt;dt&gt;ZipCode&lt;/dt&gt;
+&lt;dd&gt;&lt;%= zip_code %&gt;&lt;/dd&gt;
 
 !BULLETS
 Non-String Goodies, too
@@ -480,92 +486,86 @@ class Mailer
   end
 end
 
-!CODE: language=rub, callout=3
-class Database
+!CODE: language=ruby, callout=3
+class WrappingDatabase < SimpleDelegator
+  def convert(table: table, column: column, to: type)
+    @conversions[table][column] = type
+  end
+end
+$database = WrappingDatabase.new($database)
+
+$database.convert table: :addresses, 
+                 column: :zip_code, 
+                     to:  ZipCode
+
+!CODE: language=ruby, callout=3
+class WrappingDatabase < SimpleDelegator
   def select_from(table, where)
-    raw_results = raw_select_from(table,where)
-    raw_results.map do |row|
-      row.map_with_index { |column_value,index|
-        column_name = column_names[index]
-        [ column_name, column_value ]
-      }.to_h
+    raw_results = __getobj__.select_from(table,where)
+    if @conversions[table]
+      raw_results.map { |row_hash|
+        row_hash.map { |column,value|
+          if @conversions[table][column]
+            # e.g. value = ZipCode.new("90210")
+            value = @conversions[table][column].new(value)
+          end
+          [column,value]
+        }.to_h
+      }
     end
   end
 end
 
 !CODE: language=ruby, callout=4,5
-class Database
+class WrappingDatabase < SimpleDelegator
   def select_from(table, where)
-    raw_results = raw_select_from(table,where)
-    raw_results.map do |row|
-      row.map_with_index { |column_value,index|
-        column_name = column_names[index]
-        [ column_name, column_value ]
-      }.to_h
+    raw_results = __getobj__.select_from(table,where)
+    if @conversions[table]
+      raw_results.map { |row_hash|
+        row_hash.map { |column,value|
+          if @conversions[table][column]
+            # e.g. value = ZipCode.new("90210")
+            value = @conversions[table][column].new(value)
+          end
+          [column,value]
+        }.to_h
+      }
     end
   end
 end
 
-!CODE: language=ruby, callout=7,8
-class Database
+!CODE: language=ruby, callout=6,11,12
+class WrappingDatabase < SimpleDelegator
   def select_from(table, where)
-    raw_results = raw_select_from(table,where)
-    raw_results.map do |row|
-      row.map_with_index { |column_value,index|
-        column_name = column_names[index]
-        [ column_name, column_value ]
-      }.to_h
+    raw_results = __getobj__.select_from(table,where)
+    if @conversions[table]
+      raw_results.map { |row_hash|
+        row_hash.map { |column,value|
+          if @conversions[table][column]
+            # e.g. value = ZipCode.new("90210")
+            value = @conversions[table][column].new(value)
+          end
+          [column,value]
+        }.to_h
+      }
     end
   end
 end
 
-!CODE: language=ruby
-class Database
-  def register(table, column, type)
-    @conversions[table][column] = type
-  end
-end
-
-$database.register(:addresses,:zip_code,ZipCode)
-
-!CODE: language=ruby, callout=7
-class Database
+!CODE: language=ruby, callout=8,9
+class WrappingDatabase < SimpleDelegator
   def select_from(table, where)
-    raw_results = raw_select_from(table,where)
-    raw_results.map do |row|
-      row.map_with_index { |column_value,index|
-        column_name = column_names[index]
-        conversion_klass = @conversions[table][column_name]
-        if conversion_klass
-          [
-            column_name, 
-            conversion_klass.new(column_value),
-          ]
-        else
-          [ column_name, column_value ]
-        end
-      }.to_h
-    end
-  end
-end
-
-!CODE: language=ruby, callout=11
-class Database
-  def select_from(table, where)
-    raw_results = raw_select_from(table,where)
-    raw_results.map do |row|
-      row.map_with_index { |column_value,index|
-        column_name = column_names[index]
-        conversion_klass = @conversions[table][column_name]
-        if conversion_klass
-          [
-            column_name, 
-            conversion_klass.new(column_value),
-          ]
-        else
-          [ column_name, column_value ]
-        end
-      }.to_h
+    raw_results = __getobj__.select_from(table,where)
+    if @conversions[table]
+      raw_results.map { |row_hash|
+        row_hash.map { |column,value|
+          if @conversions[table][column]
+            # e.g. value = ZipCode.new("90210")
+            value = @conversions[table][column].new(value)
+          end
+          [column,value]
+        }.to_h
+      }
     end
   end
 end
@@ -620,8 +620,10 @@ Prices
 
 !COMMANDLINE
 > 100 / 3 
-33.333333333
-> Price.new(100).discount(30) 
+33
+> 100.0 / 3 
+33.33333333333
+> Price.new(100).discount(33) 
 &lt;Price value=33.33&gt;
 
 
@@ -630,6 +632,11 @@ States or Provinces
 
 !NORMAL
 Enumerated Types
+
+!SECTION
+Use Data Types
+Define Your Boundaries
+Knowledge and Intent Go in Code
 
 !FREEFORM
 <h1>THANKS!</h1>
