@@ -1,12 +1,8 @@
 Overcoming Our Obsession With Stringly-Typed Ruby
 !TITLE
 Overcoming Our Obsession With Stringly-Typed Ruby
-Dave Copeland / @davetron5000
-http://www.naildrivin5.com
-
-!TITLE
-@davetron5000
-(Dave Copeland)
+Dave Copeland &middot; @davetron5000
+http://www.naildrivin5.com &middot; http://technology.stitchfix.com
 
 !IMAGE
 images/cover.png
@@ -15,8 +11,7 @@ images/cover.png
 images/dccar2.jpg
 
 !TITLE
-Overcoming Our Obsession With 
-Stringly-Typed Ruby
+Overcoming Our Obsession With <br><i>Stringly-Typed</i> Ruby
 
 !SECTION
 Stringly-Typed
@@ -45,7 +40,20 @@ Simple App
 * Store addresses in a DB
 * Send letters to an address
 
-!CODE: language=ruby
+!CODE: language=ruby, callout=2,3,4
+module ThirdPartyMailingService
+  def self.find_letter(letter_id)
+    # ...
+  end
+
+  class Letter
+    def mail!(street,city,state,zip_code)
+      # ...
+    end
+  end
+end
+
+!CODE: language=ruby, callout=6,7,8,9,10
 module ThirdPartyMailingService
   def self.find_letter(letter_id)
     # ...
@@ -68,7 +76,7 @@ create table addresses(
   zip_code char(5)      not null
 )
 
-!CODE: language=ruby
+!CODE: language=ruby, callout=5,6
 class AddressReader
   def read_new_address
     puts "Enter your address"
@@ -95,10 +103,36 @@ class AddressReader
   end
 end
 
-!CODE: language=ruby
+!CODE: language=ruby, callout=17,18,19,20,21
+class AddressReader
+  def read_new_address
+    puts "Enter your address"
+
+    puts "street?"
+    street   = gets
+
+    puts "city?"
+    city     = gets
+
+    puts "state?"
+    state    = gets
+
+    puts "zip code?"
+    zip_code = gets
+
+    id = $database.insert_into(:addresses,
+        street: street,
+          city: city,
+         state: state,
+      zip_code: zip_code)
+    
+    puts "Created address #{id}"
+  end
+end
+
+!CODE: language=ruby, callout=3
 class LetterSender
   def send_letter(letter_id,address_hash)
-
     letter = ThirdPartyMailingService.find_letter(letter_id)
     letter.mail!(address_hash[:street],
                  address_hash[:city],
@@ -107,7 +141,32 @@ class LetterSender
   end
 end
 
-!CODE: language=ruby
+!CODE: language=ruby, callout=4,5,6,7
+class LetterSender
+  def send_letter(letter_id,address_hash)
+    letter = ThirdPartyMailingService.find_letter(letter_id)
+    letter.mail!(address_hash[:street],
+                 address_hash[:city],
+                 address_hash[:state],
+                 address_hash[:zip_code])
+  end
+end
+
+!CODE: language=ruby, callout=3,4
+class Mailer
+  def send_letter(address_id,letter_id)
+    address_hash = $database.select_from(:addresses,
+                                         :id => address_id)
+    LetterSender.new.send_letter(letter_id, to: address_hash)
+    puts "Letter ##{letter_id} sent to"
+    puts address_hash[:street]
+    puts "#{address_hash[:city], #{address_hash[:state]}, #{address_hash[:zip_code]}"
+  end
+end
+
+Mailer.new.send_letter(ARGV[0].to_i, ARGV[1].to_i)
+
+!CODE: language=ruby, callout=5
 class Mailer
   def send_letter(address_id,letter_id)
     address_hash = $database.select_from(:addresses,
@@ -361,7 +420,7 @@ end
 class FooBarTest
   def test_that_we_get_the_right_data_type
     result = foo_bar.nearest_zip_code(lat,long)
-    assert result.kind_of?(ZipCode), 
+    assert result.is_a?(ZipCode), 
            "Got a #{result.class} instead :("
   end
 end
@@ -489,77 +548,35 @@ $database.convert table: :addresses,
                  column: :zip_code, 
                      to:  ZipCode
 
-!CODE: language=ruby, callout=3
+!CODE: language=ruby
 class WrappingDatabase < SimpleDelegator
   def select_from(table, where)
     raw_results = __getobj__.select_from(table,where)
-    if @conversions[table]
-      raw_results.map { |row_hash|
-        row_hash.map { |column,value|
-          if @conversions[table][column]
-            # e.g. value = ZipCode.new("90210")
-            value = @conversions[table][column].new(value)
-          end
-          [column,value]
-        }.to_h
-      }
-    end
+    convert_results(table,raw_results)
   end
 end
 
-!CODE: language=ruby, callout=4,5
-class WrappingDatabase < SimpleDelegator
-  def select_from(table, where)
-    raw_results = __getobj__.select_from(table,where)
-    if @conversions[table]
-      raw_results.map { |row_hash|
-        row_hash.map { |column,value|
-          if @conversions[table][column]
-            # e.g. value = ZipCode.new("90210")
-            value = @conversions[table][column].new(value)
-          end
-          [column,value]
-        }.to_h
-      }
-    end
-  end
+!CODE: language=ruby
+def convert_results(table,raw_results)
+  raw_results.map { |row_hash|
+    convert_row(table,row_hash)
+  }
 end
 
-!CODE: language=ruby, callout=6,11,12
-class WrappingDatabase < SimpleDelegator
-  def select_from(table, where)
-    raw_results = __getobj__.select_from(table,where)
-    if @conversions[table]
-      raw_results.map { |row_hash|
-        row_hash.map { |column,value|
-          if @conversions[table][column]
-            # e.g. value = ZipCode.new("90210")
-            value = @conversions[table][column].new(value)
-          end
-          [column,value]
-        }.to_h
-      }
-    end
-  end
+!CODE: language=ruby
+def convert_row(table,row_hash)
+  row_as_array = row_hash.map { |column,value|
+    new_value = if @conversions[table][column]
+                  # e.g. ZipCode.new("90210")
+                  @conversions[table][column].new(value)
+                else
+                  value
+                end
+    [column,new_value]
+  }
+  row_as_array.to_h
 end
 
-!CODE: language=ruby, callout=8,9
-class WrappingDatabase < SimpleDelegator
-  def select_from(table, where)
-    raw_results = __getobj__.select_from(table,where)
-    if @conversions[table]
-      raw_results.map { |row_hash|
-        row_hash.map { |column,value|
-          if @conversions[table][column]
-            # e.g. value = ZipCode.new("90210")
-            value = @conversions[table][column].new(value)
-          end
-          [column,value]
-        }.to_h
-      }
-    end
-  end
-end
 
 !NORMAL
 Active Record

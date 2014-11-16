@@ -37,12 +37,8 @@
   <body><div id="contents">
     <section class='TITLE'>
 <h1>Overcoming Our Obsession With Stringly-Typed Ruby</h1>
-<h2>Dave Copeland / @davetron5000</h2>
-<h3>http://www.naildrivin5.com</h3>
-</section>
-<section class='TITLE'>
-<h1>@davetron5000</h1>
-<h2>(Dave Copeland)</h2>
+<h2>Dave Copeland &middot; @davetron5000</h2>
+<h3>http://www.naildrivin5.com &middot; http://technology.stitchfix.com</h3>
 </section>
 <section class='IMAGE'>
 <img src='images/cover.png'>
@@ -51,8 +47,7 @@
 <img src='images/dccar2.jpg'>
 </section>
 <section class='TITLE'>
-<h1>Overcoming Our Obsession With </h1>
-<h2>Stringly-Typed Ruby</h2>
+<h1>Overcoming Our Obsession With <br><i>Stringly-Typed</i> Ruby</h1>
 </section>
 <section class='SECTION'>
 <h1>Stringly-Typed</h1>
@@ -86,17 +81,30 @@
 </ul>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >module ThirdPartyMailingService</span>
-<span class='line line-2 ' >  def self.find_letter(letter_id)</span>
-<span class='line line-3 ' >    # ...</span>
-<span class='line line-4 ' >  end</span>
-<span class='line line-5 ' ></span>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='2,3,4'><span class='line line-1 ' >module ThirdPartyMailingService</span>
+<div class='lines-callout'><span class='line line-2 line-callout' >  def self.find_letter(letter_id)</span>
+<span class='line line-3 line-callout' >    # ...</span>
+<span class='line line-4 line-callout' >  end</span>
+</div><span class='line line-5 ' ></span>
 <span class='line line-6 ' >  class Letter</span>
 <span class='line line-7 ' >    def mail!(street,city,state,zip_code)</span>
 <span class='line line-8 ' >      # ...</span>
 <span class='line line-9 ' >    end</span>
 <span class='line line-10 ' >  end</span>
-<span class='line line-11 ' >end</span>
+<span class='line line-11 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='6,7,8,9,10'><span class='line line-1 ' >module ThirdPartyMailingService</span>
+<span class='line line-2 ' >  def self.find_letter(letter_id)</span>
+<span class='line line-3 ' >    # ...</span>
+<span class='line line-4 ' >  end</span>
+<span class='line line-5 ' ></span>
+<div class='lines-callout'><span class='line line-6 line-callout' >  class Letter</span>
+<span class='line line-7 line-callout' >    def mail!(street,city,state,zip_code)</span>
+<span class='line line-8 line-callout' >      # ...</span>
+<span class='line line-9 line-callout' >    end</span>
+<span class='line line-10 line-callout' >  end</span>
+</div><span class='line line-11 ' >end</span>
 <span class='line line-12 ' ></span></code></pre>
 </section>
 <section class='CODE'>
@@ -109,13 +117,13 @@
 <span class='line line-7 ' >)</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class AddressReader</span>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='5,6'><span class='line line-1 ' >class AddressReader</span>
 <span class='line line-2 ' >  def read_new_address</span>
 <span class='line line-3 ' >    puts "Enter your address"</span>
 <span class='line line-4 ' ></span>
-<span class='line line-5 ' >    puts "street?"</span>
-<span class='line line-6 ' >    street   = gets</span>
-<span class='line line-7 ' ></span>
+<div class='lines-callout'><span class='line line-5 line-callout' >    puts "street?"</span>
+<span class='line line-6 line-callout' >    street   = gets</span>
+</div><span class='line line-7 ' ></span>
 <span class='line line-8 ' >    puts "city?"</span>
 <span class='line line-9 ' >    city     = gets</span>
 <span class='line line-10 ' ></span>
@@ -136,24 +144,75 @@
 <span class='line line-25 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class LetterSender</span>
-<span class='line line-2 ' >  def send_letter(letter_id,address_hash)</span>
-<span class='line line-3 ' ></span>
-<span class='line line-4 ' >    letter = ThirdPartyMailingService.find_letter(letter_id)</span>
-<span class='line line-5 ' >    letter.mail!(address_hash[:street],</span>
-<span class='line line-6 ' >                 address_hash[:city],</span>
-<span class='line line-7 ' >                 address_hash[:state],</span>
-<span class='line line-8 ' >                 address_hash[:zip_code])</span>
-<span class='line line-9 ' >  end</span>
-<span class='line line-10 ' >end</span></code></pre>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='17,18,19,20,21'><span class='line line-1 ' >class AddressReader</span>
+<span class='line line-2 ' >  def read_new_address</span>
+<span class='line line-3 ' >    puts "Enter your address"</span>
+<span class='line line-4 ' ></span>
+<span class='line line-5 ' >    puts "street?"</span>
+<span class='line line-6 ' >    street   = gets</span>
+<span class='line line-7 ' ></span>
+<span class='line line-8 ' >    puts "city?"</span>
+<span class='line line-9 ' >    city     = gets</span>
+<span class='line line-10 ' ></span>
+<span class='line line-11 ' >    puts "state?"</span>
+<span class='line line-12 ' >    state    = gets</span>
+<span class='line line-13 ' ></span>
+<span class='line line-14 ' >    puts "zip code?"</span>
+<span class='line line-15 ' >    zip_code = gets</span>
+<span class='line line-16 ' ></span>
+<div class='lines-callout'><span class='line line-17 line-callout' >    id = $database.insert_into(:addresses,</span>
+<span class='line line-18 line-callout' >        street: street,</span>
+<span class='line line-19 line-callout' >          city: city,</span>
+<span class='line line-20 line-callout' >         state: state,</span>
+<span class='line line-21 line-callout' >      zip_code: zip_code)</span>
+</div><span class='line line-22 ' >    </span>
+<span class='line line-23 ' >    puts "Created address #{id}"</span>
+<span class='line line-24 ' >  end</span>
+<span class='line line-25 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class Mailer</span>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class LetterSender</span>
+<span class='line line-2 ' >  def send_letter(letter_id,address_hash)</span>
+<div class='lines-callout'><span class='line line-3 line-callout' >    letter = ThirdPartyMailingService.find_letter(letter_id)</span>
+</div><span class='line line-4 ' >    letter.mail!(address_hash[:street],</span>
+<span class='line line-5 ' >                 address_hash[:city],</span>
+<span class='line line-6 ' >                 address_hash[:state],</span>
+<span class='line line-7 ' >                 address_hash[:zip_code])</span>
+<span class='line line-8 ' >  end</span>
+<span class='line line-9 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='4,5,6,7'><span class='line line-1 ' >class LetterSender</span>
+<span class='line line-2 ' >  def send_letter(letter_id,address_hash)</span>
+<span class='line line-3 ' >    letter = ThirdPartyMailingService.find_letter(letter_id)</span>
+<div class='lines-callout'><span class='line line-4 line-callout' >    letter.mail!(address_hash[:street],</span>
+<span class='line line-5 line-callout' >                 address_hash[:city],</span>
+<span class='line line-6 line-callout' >                 address_hash[:state],</span>
+<span class='line line-7 line-callout' >                 address_hash[:zip_code])</span>
+</div><span class='line line-8 ' >  end</span>
+<span class='line line-9 ' >end</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3,4'><span class='line line-1 ' >class Mailer</span>
+<span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
+<div class='lines-callout'><span class='line line-3 line-callout' >    address_hash = $database.select_from(:addresses,</span>
+<span class='line line-4 line-callout' >                                         :id => address_id)</span>
+</div><span class='line line-5 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
+<span class='line line-6 ' >    puts "Letter ##{letter_id} sent to"</span>
+<span class='line line-7 ' >    puts address_hash[:street]</span>
+<span class='line line-8 ' >    puts "#{address_hash[:city], #{address_hash[:state]}, #{address_hash[:zip_code]}"</span>
+<span class='line line-9 ' >  end</span>
+<span class='line line-10 ' >end</span>
+<span class='line line-11 ' ></span>
+<span class='line line-12 ' >Mailer.new.send_letter(ARGV[0].to_i, ARGV[1].to_i)</span></code></pre>
+</section>
+<section class='CODE'>
+<pre><code class='ruby,' data-strikeouts='' data-callout-lines='5'><span class='line line-1 ' >class Mailer</span>
 <span class='line line-2 ' >  def send_letter(address_id,letter_id)</span>
 <span class='line line-3 ' >    address_hash = $database.select_from(:addresses,</span>
 <span class='line line-4 ' >                                         :id => address_id)</span>
-<span class='line line-5 ' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
-<span class='line line-6 ' >    puts "Letter ##{letter_id} sent to"</span>
+<div class='lines-callout'><span class='line line-5 line-callout' >    LetterSender.new.send_letter(letter_id, to: address_hash)</span>
+</div><span class='line line-6 ' >    puts "Letter ##{letter_id} sent to"</span>
 <span class='line line-7 ' >    puts address_hash[:street]</span>
 <span class='line line-8 ' >    puts "#{address_hash[:city], #{address_hash[:state]}, #{address_hash[:zip_code]}"</span>
 <span class='line line-9 ' >  end</span>
@@ -411,7 +470,7 @@
 <pre><code class='ruby,' data-strikeouts='' data-callout-lines='4'><span class='line line-1 ' >class FooBarTest</span>
 <span class='line line-2 ' >  def test_that_we_get_the_right_data_type</span>
 <span class='line line-3 ' >    result = foo_bar.nearest_zip_code(lat,long)</span>
-<div class='lines-callout'><span class='line line-4 line-callout' >    assert result.kind_of?(ZipCode), </span>
+<div class='lines-callout'><span class='line line-4 line-callout' >    assert result.is_a?(ZipCode), </span>
 </div><span class='line line-5 ' >           "Got a #{result.class} instead :("</span>
 <span class='line line-6 ' >  end</span>
 <span class='line line-7 ' >end</span></code></pre>
@@ -555,76 +614,34 @@
 <span class='line line-10 ' >                     to:  ZipCode</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='3'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
-<span class='line line-2 ' >  def select_from(table, where)</span>
-<div class='lines-callout'><span class='line line-3 line-callout' >    raw_results = __getobj__.select_from(table,where)</span>
-</div><span class='line line-4 ' >    if @conversions[table]</span>
-<span class='line line-5 ' >      raw_results.map { |row_hash|</span>
-<span class='line line-6 ' >        row_hash.map { |column,value|</span>
-<span class='line line-7 ' >          if @conversions[table][column]</span>
-<span class='line line-8 ' >            # e.g. value = ZipCode.new("90210")</span>
-<span class='line line-9 ' >            value = @conversions[table][column].new(value)</span>
-<span class='line line-10 ' >          end</span>
-<span class='line line-11 ' >          [column,value]</span>
-<span class='line line-12 ' >        }.to_h</span>
-<span class='line line-13 ' >      }</span>
-<span class='line line-14 ' >    end</span>
-<span class='line line-15 ' >  end</span>
-<span class='line line-16 ' >end</span></code></pre>
-</section>
-<section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='4,5'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
 <span class='line line-2 ' >  def select_from(table, where)</span>
 <span class='line line-3 ' >    raw_results = __getobj__.select_from(table,where)</span>
-<div class='lines-callout'><span class='line line-4 line-callout' >    if @conversions[table]</span>
-<span class='line line-5 line-callout' >      raw_results.map { |row_hash|</span>
-</div><span class='line line-6 ' >        row_hash.map { |column,value|</span>
-<span class='line line-7 ' >          if @conversions[table][column]</span>
-<span class='line line-8 ' >            # e.g. value = ZipCode.new("90210")</span>
-<span class='line line-9 ' >            value = @conversions[table][column].new(value)</span>
-<span class='line line-10 ' >          end</span>
-<span class='line line-11 ' >          [column,value]</span>
-<span class='line line-12 ' >        }.to_h</span>
-<span class='line line-13 ' >      }</span>
-<span class='line line-14 ' >    end</span>
-<span class='line line-15 ' >  end</span>
-<span class='line line-16 ' >end</span></code></pre>
+<span class='line line-4 ' >    convert_results(table,raw_results)</span>
+<span class='line line-5 ' >  end</span>
+<span class='line line-6 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='6,11,12'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
-<span class='line line-2 ' >  def select_from(table, where)</span>
-<span class='line line-3 ' >    raw_results = __getobj__.select_from(table,where)</span>
-<span class='line line-4 ' >    if @conversions[table]</span>
-<span class='line line-5 ' >      raw_results.map { |row_hash|</span>
-<div class='lines-callout'><span class='line line-6 line-callout' >        row_hash.map { |column,value|</span>
-</div><span class='line line-7 ' >          if @conversions[table][column]</span>
-<span class='line line-8 ' >            # e.g. value = ZipCode.new("90210")</span>
-<span class='line line-9 ' >            value = @conversions[table][column].new(value)</span>
-<span class='line line-10 ' >          end</span>
-<div class='lines-callout'><span class='line line-11 line-callout' >          [column,value]</span>
-<span class='line line-12 line-callout' >        }.to_h</span>
-</div><span class='line line-13 ' >      }</span>
-<span class='line line-14 ' >    end</span>
-<span class='line line-15 ' >  end</span>
-<span class='line line-16 ' >end</span></code></pre>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >def convert_results(table,raw_results)</span>
+<span class='line line-2 ' >  raw_results.map { |row_hash|</span>
+<span class='line line-3 ' >    convert_row(table,row_hash)</span>
+<span class='line line-4 ' >  }</span>
+<span class='line line-5 ' >end</span></code></pre>
 </section>
 <section class='CODE'>
-<pre><code class='ruby,' data-strikeouts='' data-callout-lines='8,9'><span class='line line-1 ' >class WrappingDatabase < SimpleDelegator</span>
-<span class='line line-2 ' >  def select_from(table, where)</span>
-<span class='line line-3 ' >    raw_results = __getobj__.select_from(table,where)</span>
-<span class='line line-4 ' >    if @conversions[table]</span>
-<span class='line line-5 ' >      raw_results.map { |row_hash|</span>
-<span class='line line-6 ' >        row_hash.map { |column,value|</span>
-<span class='line line-7 ' >          if @conversions[table][column]</span>
-<div class='lines-callout'><span class='line line-8 line-callout' >            # e.g. value = ZipCode.new("90210")</span>
-<span class='line line-9 line-callout' >            value = @conversions[table][column].new(value)</span>
-</div><span class='line line-10 ' >          end</span>
-<span class='line line-11 ' >          [column,value]</span>
-<span class='line line-12 ' >        }.to_h</span>
-<span class='line line-13 ' >      }</span>
-<span class='line line-14 ' >    end</span>
-<span class='line line-15 ' >  end</span>
-<span class='line line-16 ' >end</span></code></pre>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >def convert_row(table,row_hash)</span>
+<span class='line line-2 ' >  row_as_array = row_hash.map { |column,value|</span>
+<span class='line line-3 ' >    new_value = if @conversions[table][column]</span>
+<span class='line line-4 ' >                  # e.g. ZipCode.new("90210")</span>
+<span class='line line-5 ' >                  @conversions[table][column].new(value)</span>
+<span class='line line-6 ' >                else</span>
+<span class='line line-7 ' >                  value</span>
+<span class='line line-8 ' >                end</span>
+<span class='line line-9 ' >    [column,new_value]</span>
+<span class='line line-10 ' >  }</span>
+<span class='line line-11 ' >  row_as_array.to_h</span>
+<span class='line line-12 ' >end</span>
+<span class='line line-13 ' ></span></code></pre>
 </section>
 <section class='NORMAL'>
 <h1>Active Record</h1>
