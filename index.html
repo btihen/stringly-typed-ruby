@@ -289,14 +289,14 @@
     <td>Five Digits</td>
   </tr>
   <tr>
-    <th>What They Mean</th>
-    <td>Anything</td>
-    <td>Location in the U.S.</td>
-  </tr>
-  <tr>
     <th>Operations</th>
     <td>A ton</td>
     <td>Pretty much none</td>
+  </tr>
+  <tr>
+    <th>What They Mean</th>
+    <td>Anything</td>
+    <td>Location in the U.S.</td>
   </tr>
   </tbody>
 </table>
@@ -336,24 +336,6 @@
 <span class='line line-5 ' >end</span></code></pre>
 </section>
 <section class='IMAGE'>
-<img src='images/zipcode_map.png'>
-</section>
-<section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class ZipCode</span>
-<span class='line line-2 ' >  def description</span>
-<span class='line line-3 ' >    where = {</span>
-<span class='line line-4 ' >      "00" => "Puerto Rico",</span>
-<span class='line line-5 ' >      "03" => "Maine",</span>
-<span class='line line-6 ' >      ...</span>
-<span class='line line-7 ' >      "73" => "Oklahoma",</span>
-<span class='line line-8 ' >      "97" => "Oregon",</span>
-<span class='line line-9 ' >      "99" => "Alaska"</span>
-<span class='line line-10 ' >    }[@raw_zipcode[0..1]]</span>
-<span class='line line-11 ' >    "#{@raw_zipcode} (Somewhere in #{where})"</span>
-<span class='line line-12 ' >  end</span>
-<span class='line line-13 ' >end</span></code></pre>
-</section>
-<section class='IMAGE'>
 <img src='images/strong_boundaries.png'>
 </section>
 <section class='BULLETS'>
@@ -361,7 +343,7 @@
 <ul>
 <li>What problem am I solving?</li>
 <li>Push code around to solve it</li>
-<li>Shore-up the boundaries</li>
+<li>Define boundaries using data types</li>
 </ul>
 </section>
 <section class='SECTION'>
@@ -443,26 +425,43 @@
 <section class='IMAGE'>
 <img src='images/scala-logo.png'>
 </section>
-<section class='SECTION'>
-<h1>Rules of Thumb</h1>
+<section class='BULLETS'>
+<h1>Two Times You Might</h1>
+<ul>
+<li>Risk</li>
+<li>Big Refactor</li>
+</ul>
 </section>
-<section class='NORMAL'>
-<h1>How often do we expect a bad type?</h1>
+<section class='BULLETS'>
+<h1>Risk</h1>
+<ul>
+<li>How often do we expect a bad type?</li>
+<li>What happens if a one does?</li>
+</ul>
 </section>
-<section class='NORMAL'>
-<h1>What happens if a bad type comes in?</h1>
+<section class='BULLETS'>
+<h1>Big Refactor (w/compiler)</h1>
+<ul>
+<li>Change core types as needed</li>
+<li>Compile</li>
+<li>Fix the errors</li>
+</ul>
 </section>
-<section class='NORMAL'>
-<h1>Fake-out "lean on the compiler"</h1>
-</section>
-<section class='SECTION'>
-<h1>The World Wants Strings</h1>
+<section class='BULLETS'>
+<h1>Big Refactor (no compiler)</h1>
+<ul>
+<li>Change core types as needed</li>
+<li>Add explicit type checks</li>
+<li>Run tests</li>
+<li>Fix the errors</li>
+<li>Remove explicit type checks</li>
+</ul>
 </section>
 <section class='BULLETS'>
 <h1>When The World Wants/Has Strings</h1>
 <ul>
-<li>Protocols</li>
-<li>Wrappers</li>
+<li>Protocols - Data Type &rarr; String</li>
+<li>Wrappers - String &rarr; Data Type</li>
 </ul>
 </section>
 <section class='SECTION'>
@@ -650,20 +649,20 @@
 <pre><code class='none' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >address = Address.find(43) # has the bad zipcode</span>
 <span class='line line-2 ' >&lt;ArgumentError "must be a ZipCode"&gt;</span></code></pre>
 </section>
+<section class='NORMAL'>
+<h1>Sequel</h1>
+</section>
 <section class='CODE'>
-<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >class AddressReader</span>
-<span class='line line-2 ' >  def read_new_address</span>
-<span class='line line-3 ' ></span>
-<span class='line line-4 ' >    # ...</span>
-<span class='line line-5 ' ></span>
-<span class='line line-6 ' >    zip_code = ZipCode.new(gets)</span>
-<span class='line line-7 ' ></span>
-<span class='line line-8 ' >    Address.create!(street: street,</span>
-<span class='line line-9 ' >                      city: city,</span>
-<span class='line line-10 ' >                     state: state,</span>
-<span class='line line-11 ' >                  zip_code: zip_code)</span>
-<span class='line line-12 ' >  end</span>
-<span class='line line-13 ' >end</span></code></pre>
+<pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >require 'sequel/plugins/serialization'</span>
+<span class='line line-2 ' >Sequel::Plugins::Serialization.register_format(:zip_code_serialization,</span>
+<span class='line line-3 ' >  ->(zip_code)   { zip_code.to_str         },</span>
+<span class='line line-4 ' >  ->(raw_string) { ZipCode.new(raw_string) }</span>
+<span class='line line-5 ' >)</span>
+<span class='line line-6 ' ></span>
+<span class='line line-7 ' >class Address < Sequel::Model</span>
+<span class='line line-8 ' >  plugin :serialization</span>
+<span class='line line-9 ' >  serialize_attributes :zip_code_serialization, :zip_code</span>
+<span class='line line-10 ' >end</span></code></pre>
 </section>
 <section class='SECTION'>
 <h1>Other Opportunites</h1>
@@ -672,29 +671,35 @@
 <h1>Email</h1>
 <h2><code>EmailAddress</code>, <code>VerifiedEmailAddress</code></h2>
 </section>
+<section class='COMMANDLINE'>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> "dave@stitchfix.com" == "Dave@StitchFix.com"</span>
+<span class='cli-element cli-result'><span class='cli-line'> => false </span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> "dave@stitchfix.com".downcase == "Dave@StitchFix.com".downcase #sigh</span>
+<span class='cli-element cli-result'><span class='cli-line'> => true </span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> EmailAddress.new("dave@stitchfix.com") == EmailAddress.new("Dave@StitchFix.com")</span>
+<span class='cli-element cli-result'><span class='cli-line'> => true</span></span>
+</code></pre>
+</section>
 <section class='NORMAL'>
 <h1>Prices</h1>
 </section>
 <section class='COMMANDLINE'>
-<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 100 / 3 </span>
-<span class='cli-element cli-result'><span class='cli-line'>33</span></span>
-<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> 100.0 / 3 </span>
-<span class='cli-element cli-result'><span class='cli-line'>33.33333333333</span></span>
-<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> Price.new(100).discount(33) </span>
+<pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> third = Rational(1,3)</span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> (100 * third).to_f</span>
+<span class='cli-element cli-result'><span class='cli-line'>33.333333333336</span></span>
+<span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> Price.new(100).discount(third) </span>
 <span class='cli-element cli-result'><span class='cli-line'>&lt;Price value=33.33&gt;</span>
 <span class='cli-line'></span></span>
 </code></pre>
 </section>
 <section class='NORMAL'>
-<h1>States or Provinces</h1>
-</section>
-<section class='NORMAL'>
 <h1>Enumerated Types</h1>
+<h2>State/Province, Status Codes, Error Codes</h2>
 </section>
 <section class='SECTION'>
 <h1>Use Data Types</h1>
 <h2>Define Your Boundaries</h2>
-<h3>Knowledge and Intent Go in Code</h3>
+<h3>Put Your Knowledge and Intent in Code</h3>
 </section>
 <section class='FREEFORM'>
 <h1>THANKS!</h1>
