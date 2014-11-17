@@ -25,7 +25,7 @@ Used to describe an implementation that needlessly relies on strings when progra
 !SECTION
 A tale of two zip codes
 U.S. postal codes
-aka "Zip Codes"
+aka “Zip Codes”
 
 !BULLETS
 Zip Codes
@@ -565,16 +565,16 @@ end
 
 !CODE: language=ruby
 def convert_row(table,row_hash)
-  row_as_array = row_hash.map { |column,value|
-    new_value = if @conversions[table][column]
-                  # e.g. ZipCode.new("90210")
-                  @conversions[table][column].new(value)
-                else
-                  value
-                end
-    [column,new_value]
-  }
-  row_as_array.to_h
+  new_row = {}
+  row_hash.each do |column,value|
+    if @conversions[table][column]
+      # e.g. ZipCode.new("90210")
+      new_row[column] = @conversions[table][column].new(value)
+    else
+      new_row[column] = value
+    end
+  end
+  new_row
 end
 
 
@@ -606,9 +606,11 @@ Sequel
 
 !CODE: language=ruby
 require 'sequel/plugins/serialization'
-Sequel::Plugins::Serialization.register_format(:zip_code_serialization,
-  ->(zip_code)   { zip_code.to_str         },
-  ->(raw_string) { ZipCode.new(raw_string) }
+Sequel::Plugins::Serialization.register_format(
+  :zip_code_serialization,
+
+  ->(zip_code)   { zip_code.to_str         }, # AKA dump
+  ->(raw_string) { ZipCode.new(raw_string) }  # AKA load
 )
 
 class Address < Sequel::Model
@@ -620,8 +622,7 @@ end
 Other Opportunites
 
 !NORMAL
-Email
-<code>EmailAddress</code>, <code>VerifiedEmailAddress</code>
+<code>EmailAddress</code>
 
 !COMMANDLINE
 > "dave@stitchfix.com" == "Dave@StitchFix.com"
@@ -653,6 +654,6 @@ Put Your Knowledge and Intent in Code
 
 !FREEFORM
 <h1>THANKS!</h1>
-<h2><a href="#">Slides</a></h2>
+<h2><a href="http://naildrivin5.com/stringly-typed-ruby/">http://naildrivin5.com/stringly-typed-ruby/</a></h2>
 <h3><a href="http://www.naildrivin5.com/blog">My Blog - http://www.naildrivin5.com/blog</a></h3>
 <h4><a href="http://technology.stitchfix.com/jobs">Get A New Job at http://technology.stitchfix.com/jobs</a></h4>

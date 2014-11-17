@@ -61,7 +61,7 @@
 <section class='SECTION'>
 <h1>A tale of two zip codes</h1>
 <h2>U.S. postal codes</h2>
-<h3>aka "Zip Codes"</h3>
+<h3>aka “Zip Codes”</h3>
 </section>
 <section class='BULLETS'>
 <h1>Zip Codes</h1>
@@ -630,16 +630,16 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >def convert_row(table,row_hash)</span>
-<span class='line line-2 ' >  row_as_array = row_hash.map { |column,value|</span>
-<span class='line line-3 ' >    new_value = if @conversions[table][column]</span>
-<span class='line line-4 ' >                  # e.g. ZipCode.new("90210")</span>
-<span class='line line-5 ' >                  @conversions[table][column].new(value)</span>
-<span class='line line-6 ' >                else</span>
-<span class='line line-7 ' >                  value</span>
-<span class='line line-8 ' >                end</span>
-<span class='line line-9 ' >    [column,new_value]</span>
-<span class='line line-10 ' >  }</span>
-<span class='line line-11 ' >  row_as_array.to_h</span>
+<span class='line line-2 ' >  new_row = {}</span>
+<span class='line line-3 ' >  row_hash.each do |column,value|</span>
+<span class='line line-4 ' >    if @conversions[table][column]</span>
+<span class='line line-5 ' >      # e.g. ZipCode.new("90210")</span>
+<span class='line line-6 ' >      new_row[column] = @conversions[table][column].new(value)</span>
+<span class='line line-7 ' >    else</span>
+<span class='line line-8 ' >      new_row[column] = value</span>
+<span class='line line-9 ' >    end</span>
+<span class='line line-10 ' >  end</span>
+<span class='line line-11 ' >  new_row</span>
 <span class='line line-12 ' >end</span>
 <span class='line line-13 ' ></span></code></pre>
 </section>
@@ -671,22 +671,23 @@
 </section>
 <section class='CODE'>
 <pre><code class='ruby' data-strikeouts='' data-callout-lines=''><span class='line line-1 ' >require 'sequel/plugins/serialization'</span>
-<span class='line line-2 ' >Sequel::Plugins::Serialization.register_format(:zip_code_serialization,</span>
-<span class='line line-3 ' >  ->(zip_code)   { zip_code.to_str         },</span>
-<span class='line line-4 ' >  ->(raw_string) { ZipCode.new(raw_string) }</span>
-<span class='line line-5 ' >)</span>
-<span class='line line-6 ' ></span>
-<span class='line line-7 ' >class Address < Sequel::Model</span>
-<span class='line line-8 ' >  plugin :serialization</span>
-<span class='line line-9 ' >  serialize_attributes :zip_code_serialization, :zip_code</span>
-<span class='line line-10 ' >end</span></code></pre>
+<span class='line line-2 ' >Sequel::Plugins::Serialization.register_format(</span>
+<span class='line line-3 ' >  :zip_code_serialization,</span>
+<span class='line line-4 ' ></span>
+<span class='line line-5 ' >  ->(zip_code)   { zip_code.to_str         }, # AKA dump</span>
+<span class='line line-6 ' >  ->(raw_string) { ZipCode.new(raw_string) }  # AKA load</span>
+<span class='line line-7 ' >)</span>
+<span class='line line-8 ' ></span>
+<span class='line line-9 ' >class Address < Sequel::Model</span>
+<span class='line line-10 ' >  plugin :serialization</span>
+<span class='line line-11 ' >  serialize_attributes :zip_code_serialization, :zip_code</span>
+<span class='line line-12 ' >end</span></code></pre>
 </section>
 <section class='SECTION'>
 <h1>Other Opportunites</h1>
 </section>
 <section class='NORMAL'>
-<h1>Email</h1>
-<h2><code>EmailAddress</code>, <code>VerifiedEmailAddress</code></h2>
+<h1><code>EmailAddress</code></h1>
 </section>
 <section class='COMMANDLINE'>
 <pre><code class='no-highlight'><span class='cli-prompt'>&gt;</span> <span class='cli-element cli-command cli-line'> "dave@stitchfix.com" == "Dave@StitchFix.com"</span>
@@ -720,7 +721,7 @@
 </section>
 <section class='FREEFORM'>
 <h1>THANKS!</h1>
-<h2><a href="#">Slides</a></h2>
+<h2><a href="http://naildrivin5.com/stringly-typed-ruby/">http://naildrivin5.com/stringly-typed-ruby/</a></h2>
 <h3><a href="http://www.naildrivin5.com/blog">My Blog - http://www.naildrivin5.com/blog</a></h3>
 <h4><a href="http://technology.stitchfix.com/jobs">Get A New Job at http://technology.stitchfix.com/jobs</a></h4>
 </section>
